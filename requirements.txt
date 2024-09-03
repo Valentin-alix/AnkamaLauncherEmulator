@@ -1,3 +1,0 @@
-fritm
-bs4
-requests
