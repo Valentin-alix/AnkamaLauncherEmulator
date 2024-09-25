@@ -3,37 +3,47 @@ import subprocess
 import sys
 from threading import Thread
 from time import sleep
-import uuid
 from thrift.transport import TSocket, TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
 
 sys.path.append(str(Path(__file__).parent.parent))
-from src.tokens import get_token
+
 from src.consts import DOFUS_PATH
+from src.apis.auth.auth_api import AuthApi
+from src.apis.haapi.haapi import Haapi
 from src.gen_zaap.zaap import ZaapService
+from src.models.account_game_info import AccountGameInfo
+from src.utils import generate_hash
+
+GAME_ID_BY_NAME: dict[str, str] = {"dofus": "102"}
 
 
 class AnkamaLauncherHandler:
-    def __init__(self) -> None:
-        self.tokens_by_login: dict[str, str] = {}
-        self.curr_login: str | None = None
-        self.curr_password: str | None = None
+    def __init__(self, haapi: Haapi, auth_api: AuthApi) -> None:
+        self.haapi = haapi
+        self.auth_api = auth_api
+        self.instance_id: int = 0
+        self.infos_by_hash: dict[str, AccountGameInfo] = {}
 
     def launch_dofus(self, login: str, password: str):
-        self.curr_login = login
-        self.curr_password = password
-        if not self.tokens_by_login.get(login):
-            self.tokens_by_login[login] = get_token(login, password)
+        game_name = "dofus"
+        game_id = GAME_ID_BY_NAME[game_name]
+        hash = generate_hash()
+        self.instance_id += 1
+        api_key = self.auth_api.get_api_key(game_id, login, password)
+
+        self.infos_by_hash[hash] = AccountGameInfo(login, password, game_id, api_key)
+
         subprocess.Popen(
             [
                 DOFUS_PATH,
                 "--port=26116",
-                "--gameName=dofus",
+                f"--gameName={game_name}",
                 "--gameRelease=main",
-                "--instanceId=1",
-                f"--hash={uuid.uuid4()}",
+                f"--instanceId={self.instance_id}",
+                f"--hash={hash}",
                 "--canLogin=true",
             ],
             stdout=sys.stdout,
@@ -44,35 +54,37 @@ class AnkamaLauncherHandler:
     def connect(
         self, gameName: str, releaseName: str, instanceId: int, hash: str
     ) -> str:
-        match gameName:
-            case "dofus":
-                return "102"
-        raise NotImplementedError
+        return hash
 
-    def userInfo_get(self, gameSession: str) -> str:
-        assert self.curr_login is not None
-        return self.curr_login
+    def userInfo_get(self, hash: str) -> str:
+        user_infos = self.haapi.sign_on_with_api_key(
+            int(self.infos_by_hash[hash].gameId), self.infos_by_hash[hash].api_key
+        )
+        return str(user_infos)
 
-    def settings_get(self, gameSession: str, key: str) -> str:
+    def settings_get(self, hash: str, key: str) -> str:
         match key:
             case "autoConnectType":
-                return "1"
+                return '"1"'
             case "language":
-                return "fr"
+                return '"fr"'
             case "connectionPort":
-                return "5555"
+                return '"5555"'
         raise NotImplementedError
 
-    def auth_getGameToken(self, gameSession: str, gameId: int) -> str:
-        assert self.curr_login is not None and self.curr_password is not None
-        return self.tokens_by_login[self.curr_login]
+    def auth_getGameToken(self, hash: str, gameId: int) -> str:
+        res = self.haapi.create_token(hash, self.infos_by_hash[hash].api_key)
+        print(res)
+        return str(res)
 
     def zaapMustUpdate_get(self, gameSession: str) -> bool:
         return False
 
 
 def launch_ankama_launcher() -> tuple[AnkamaLauncherHandler, TServer.TSimpleServer]:
-    handler = AnkamaLauncherHandler()
+    haapi = Haapi()
+    auth_api = AuthApi()
+    handler = AnkamaLauncherHandler(haapi, auth_api)
     processor = ZaapService.Processor(handler)
 
     transport = TSocket.TServerSocket(host="localhost", port=26116)
