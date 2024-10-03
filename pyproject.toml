@@ -13,6 +13,11 @@ psutil = "^6.0.0"
 wmi = "^1.5.1"
 pycryptodomex = "^3.21.0"
 
+include = [
+    "ankama_launcher_emulator/**/*.py",  # include all python files
+    "README.md",
+    "pyproject.toml"
+]
 
 [build-system]
 requires = ["poetry-core"]

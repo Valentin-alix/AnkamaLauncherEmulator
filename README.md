@@ -8,4 +8,4 @@ Pour lancer un compte aller dans src/server/server.py, modifiez le login et lanc
 
 ### Installer le package
 
-`pip install git+https://github.com/Valentin-alix/AnkamaLauncherEmulator`
+`poetry add git+https://github.com/Valentin-alix/AnkamaLauncherEmulator`
