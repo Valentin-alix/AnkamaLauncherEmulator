@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "ankamaauth"
+name = "ankama_launcher_emulator"
 version = "0.1.0"
 description = ""
 authors = ["Valentin Alix <valentin-alix.850@outlook.fr>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">3.11"
 requests = "^2.32.3"
 thrift = "^0.20.0"
 psutil = "^6.0.0"

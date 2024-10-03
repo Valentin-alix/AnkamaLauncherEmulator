@@ -11,12 +11,12 @@ from thrift.server import TServer
 
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from src.consts import DOFUS_PATH, GAME_ID_BY_NAME
-from src.decrypter.crypto_helper import CryptoHelper
-from src.haapi.haapi import Haapi
-from src.interfaces.account_game_info import AccountGameInfo
-from src.server.handler import AnkamaLauncherHandler
-from src.gen_zaap.zaap import ZaapService
+from ankama_launcher_emulator.consts import DOFUS_PATH, GAME_ID_BY_NAME
+from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
+from ankama_launcher_emulator.haapi.haapi import Haapi
+from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
+from ankama_launcher_emulator.server.handler import AnkamaLauncherHandler
+from ankama_launcher_emulator.gen_zaap.zaap import ZaapService
 
 
 @dataclass

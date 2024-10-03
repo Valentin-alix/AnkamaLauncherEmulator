@@ -1,5 +1,5 @@
-from src.decrypter.crypto_helper import CryptoHelper
-from src.interfaces.account_game_info import AccountGameInfo
+from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
+from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
 
 
 from dataclasses import dataclass, field

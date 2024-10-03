@@ -13,13 +13,16 @@ from Cryptodome.Util.Padding import pad, unpad
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.interfaces.deciphered_cert import DecipheredCertifDatas, StoredCertificate
-from src.interfaces.deciphered_api_key import (
+from ankama_launcher_emulator.interfaces.deciphered_cert import (
+    DecipheredCertifDatas,
+    StoredCertificate,
+)
+from ankama_launcher_emulator.interfaces.deciphered_api_key import (
     DecipheredApiKey,
     DecipheredApiKeyDatas,
 )
-from src.consts import API_KEY_FOLDER_PATH, CERTIFICATE_FOLDER_PATH
-from src.decrypter.device import Device
+from ankama_launcher_emulator.consts import API_KEY_FOLDER_PATH, CERTIFICATE_FOLDER_PATH
+from ankama_launcher_emulator.decrypter.device import Device
 
 
 class CryptoHelper:
