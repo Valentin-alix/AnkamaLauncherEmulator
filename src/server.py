@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from pathlib import Path
 import subprocess
 import sys
@@ -10,31 +11,34 @@ from thrift.server import TServer
 
 sys.path.append(str(Path(__file__).parent.parent))
 
+from src.decrypter.crypto_helper import CryptoHelper
+from src.haapi.haapi import Haapi
 from src.consts import DOFUS_PATH
-from src.apis.auth.auth_api import AuthApi
-from src.apis.haapi.haapi import Haapi
 from src.gen_zaap.zaap import ZaapService
-from src.models.account_game_info import AccountGameInfo
-from src.utils import generate_hash
+from src.interfaces.account_game_info import AccountGameInfo
+from src.utils import generate_random_hash
 
 GAME_ID_BY_NAME: dict[str, str] = {"dofus": "102"}
 
 
+@dataclass
 class AnkamaLauncherHandler:
-    def __init__(self, haapi: Haapi, auth_api: AuthApi) -> None:
-        self.haapi = haapi
-        self.auth_api = auth_api
-        self.instance_id: int = 0
-        self.infos_by_hash: dict[str, AccountGameInfo] = {}
+    instance_id: int = field(init=False, default=0)
+    infos_by_hash: dict[str, AccountGameInfo] = field(
+        init=False, default_factory=lambda: {}
+    )
 
-    def launch_dofus(self, login: str, password: str):
+    def launch_dofus(self, login: str):
         game_name = "dofus"
         game_id = GAME_ID_BY_NAME[game_name]
-        hash = generate_hash()
+        hash = generate_random_hash()
         self.instance_id += 1
-        api_key = self.auth_api.get_api_key(game_id, login, password)
 
-        self.infos_by_hash[hash] = AccountGameInfo(login, password, game_id, api_key)
+        api_key = CryptoHelper.getStoredApiKey(login)["apikey"]["key"]
+
+        self.infos_by_hash[hash] = AccountGameInfo(
+            login, game_id, api_key, Haapi(api_key)
+        )
 
         subprocess.Popen(
             [
@@ -57,8 +61,8 @@ class AnkamaLauncherHandler:
         return hash
 
     def userInfo_get(self, hash: str) -> str:
-        user_infos = self.haapi.sign_on_with_api_key(
-            int(self.infos_by_hash[hash].gameId), self.infos_by_hash[hash].api_key
+        user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
+            int(self.infos_by_hash[hash].gameId)
         )
         return str(user_infos)
 
@@ -73,18 +77,18 @@ class AnkamaLauncherHandler:
         raise NotImplementedError
 
     def auth_getGameToken(self, hash: str, gameId: int) -> str:
-        res = self.haapi.create_token(hash, self.infos_by_hash[hash].api_key)
-        print(res)
-        return str(res)
+        certificate_datas = CryptoHelper.getStoredCertificate(
+            self.infos_by_hash[hash].login
+        )["certificate"]
+        res = self.infos_by_hash[hash].haapi.createToken(gameId, certificate_datas)
+        return res
 
     def zaapMustUpdate_get(self, gameSession: str) -> bool:
         return False
 
 
 def launch_ankama_launcher() -> tuple[AnkamaLauncherHandler, TServer.TSimpleServer]:
-    haapi = Haapi()
-    auth_api = AuthApi()
-    handler = AnkamaLauncherHandler(haapi, auth_api)
+    handler = AnkamaLauncherHandler()
     processor = ZaapService.Processor(handler)
 
     transport = TSocket.TServerSocket(host="localhost", port=26116)
@@ -97,13 +101,14 @@ def launch_ankama_launcher() -> tuple[AnkamaLauncherHandler, TServer.TSimpleServ
 
 def main():
     handler, server = launch_ankama_launcher()
-    print("Starting the server...")
-    thread = Thread(target=server.serve)
+    print("Starting ankama launcher server")
+    thread = Thread(target=server.serve, daemon=True)
     thread.start()
-    sleep(1)
     print("Launch dofus game")
-    handler.launch_dofus("ezrealeu44700_1@outlook.com", "7jO3cGjEN4pRY2")
-    thread.join()
+    handler.launch_dofus("ezrealeu44700_1@outlook.com")
+
+    while True:
+        sleep(1)
 
 
 if __name__ == "__main__":
