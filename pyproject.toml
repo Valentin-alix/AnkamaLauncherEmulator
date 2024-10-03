@@ -14,7 +14,7 @@ wmi = "^1.5.1"
 pycryptodomex = "^3.21.0"
 
 include = [
-    "ankama_launcher_emulator"
+    "ankama_launcher_emulator",
     "README.md",
     "pyproject.toml"
 ]
