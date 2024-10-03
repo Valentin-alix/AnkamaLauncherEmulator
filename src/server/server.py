@@ -4,6 +4,7 @@ import subprocess
 import sys
 from threading import Thread
 from time import sleep
+import uuid
 from thrift.transport import TSocket, TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
@@ -15,7 +16,6 @@ from src.decrypter.crypto_helper import CryptoHelper
 from src.haapi.haapi import Haapi
 from src.interfaces.account_game_info import AccountGameInfo
 from src.server.handler import AnkamaLauncherHandler
-from src.utils import generate_random_hash
 from src.gen_zaap.zaap import ZaapService
 
 
@@ -37,7 +37,7 @@ class AnkamaLauncherServer:
         print(f"Launch dofus game {login}")
         game_name = "dofus"
         game_id = GAME_ID_BY_NAME[game_name]
-        hash = generate_random_hash()
+        hash = str(uuid.uuid4())
         self.instance_id += 1
 
         api_key = CryptoHelper.getStoredApiKey(login)["apikey"]["key"]

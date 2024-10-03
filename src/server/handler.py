@@ -18,7 +18,7 @@ class AnkamaLauncherHandler:
 
     def userInfo_get(self, hash: str) -> str:
         user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
-            int(self.infos_by_hash[hash].gameId)
+            int(self.infos_by_hash[hash].game_id)
         )
         return str(user_infos)
 
