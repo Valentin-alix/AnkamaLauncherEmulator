@@ -104,8 +104,9 @@ def main():
     print("Starting ankama launcher server")
     thread = Thread(target=server.serve, daemon=True)
     thread.start()
-    print("Launch dofus game")
+
     handler.launch_dofus("ezrealeu44700_1@outlook.com")
+    print("Launch dofus game")
 
     while True:
         sleep(1)
