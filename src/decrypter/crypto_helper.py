@@ -1,4 +1,5 @@
 import base64
+import datetime
 import getpass
 import hashlib
 import json
@@ -9,10 +10,10 @@ from typing import Any
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import pad, unpad
 
-from src.interfaces.deciphered_cert import DecipheredCertifDatas, StoredCertificate
-
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
+
+from src.interfaces.deciphered_cert import DecipheredCertifDatas, StoredCertificate
 from src.interfaces.deciphered_api_key import (
     DecipheredApiKey,
     DecipheredApiKeyDatas,
@@ -146,5 +147,8 @@ class CryptoHelper:
 
 
 if __name__ == "__main__":
-    datas = CryptoHelper.getStoredCertificate("ezrealeu44700_1@outlook.com")
+    datas = CryptoHelper.getStoredApiKey("ezrealeu44700_1@outlook.com")
+
+    refresh_date = datas["apikey"]["refreshDate"]
+    print(datetime.datetime.fromtimestamp(refresh_date / 1000))
     print(datas)
