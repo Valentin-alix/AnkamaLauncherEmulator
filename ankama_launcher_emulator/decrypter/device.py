@@ -6,6 +6,7 @@ import os
 import re
 import psutil
 import wmi
+import pythoncom
 
 
 class Device:
@@ -94,6 +95,7 @@ class Device:
     @staticmethod
     def getCpuModel() -> str:
         if psutil.WINDOWS:
+            pythoncom.CoInitialize()
             _wmi = wmi.WMI()
             cpu_info = _wmi.Win32_Processor()[0]
             cpu_model = cpu_info.Name
