@@ -60,6 +60,7 @@ class AnkamaLauncherServer:
             stderr=sys.stderr,
             text=True,
         )
+        sleep(1)
 
 
 def main():
@@ -68,7 +69,6 @@ def main():
     server.start()
 
     server.launch_dofus("ezrealeu44700_1@outlook.com")
-    sleep(1)
     server.launch_dofus("ezrealeu44700_2@outlook.com")
 
     while True:
