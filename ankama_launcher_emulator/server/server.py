@@ -1,17 +1,19 @@
-from dataclasses import dataclass, field
-from pathlib import Path
 import subprocess
 import sys
+import uuid
+from dataclasses import dataclass, field
+from pathlib import Path
 from threading import Lock, Thread
 from time import sleep
-import uuid
-from thrift.transport import TSocket, TTransport
+
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
+from thrift.transport import TSocket, TTransport
 
+from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from ankama_launcher_emulator.consts import DOFUS_PATH, GAME_ID_BY_NAME
+from ankama_launcher_emulator.consts import GAME_ID_BY_NAME, DOFUS_BETA, DOFUS_PATH
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.haapi.haapi import Haapi
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
@@ -35,36 +37,62 @@ class AnkamaLauncherServer:
         thread.start()
 
     def launch_dofus(self, login: str):
-        def _launch_dofus_exe(game_name: str, hash: str):
-            with self._lock_launch_game:
-                subprocess.Popen(
-                    [
-                        DOFUS_PATH,
-                        "--port=26116",
-                        f"--gameName={game_name}",
-                        "--gameRelease=main",
-                        f"--instanceId={self.instance_id}",
-                        f"--hash={hash}",
-                        "--canLogin=true",
-                    ],
-                    stdout=sys.stdout,
-                    stderr=sys.stderr,
-                    text=True,
-                )
-                sleep(1)
-
         print(f"Launch dofus game {login}")
-        game_name = "dofus"
-        game_id = GAME_ID_BY_NAME[game_name]
-        hash = str(uuid.uuid4())
+        random_hash = str(uuid.uuid4())
         self.instance_id += 1
 
         api_key = CryptoHelper.getStoredApiKey(login)["apikey"]["key"]
 
-        self.handler.infos_by_hash[hash] = AccountGameInfo(
-            login, game_id, api_key, Haapi(api_key)
+        self.handler.infos_by_hash[random_hash] = AccountGameInfo(
+            login, GAME_ID_BY_NAME[GameNameEnum.DOFUS], api_key, Haapi(api_key)
         )
-        Thread(target=lambda: _launch_dofus_exe(game_name, hash), daemon=True).start()
+        Thread(target=lambda: self._launch_dofus_exe(random_hash), daemon=True).start()
+
+    def _launch_dofus_exe(self, random_hash: str):
+        command = [
+            DOFUS_PATH,
+            "--port=26116",
+            f"--gameName={GameNameEnum.DOFUS}",
+            "--gameRelease=main",
+            f"--instanceId={self.instance_id}",
+            f"--hash={random_hash}",
+            "--canLogin=true",
+        ]
+        self._launch_exe(command)
+
+    def _launch_dofus_beta_exe(self, random_hash: str):
+        # FIXME
+        command = [
+            DOFUS_BETA,
+            "--port",
+            "26116",
+            "--gameName",
+            GameNameEnum.DOFUS,
+            "--gameRelease",
+            "beta",
+            "--instanceId",
+            f"{self.instance_id}",
+            "--hash",
+            random_hash,
+            "--canLogin",
+            "true",
+            "-logFile",
+            "C:\\Users\\valen\\AppData\\Roaming\\zaap\\gamesLogs\\dofus-beta/dofus.log"
+            "--langCode",
+            "fr",
+            "--autoConnectType",
+            "1",
+            "--connectionPort",
+            "5555",
+            "--configUrl",
+            "https://dofus2.cdn.ankama.com/config/beta_windows.json",
+        ]
+        self._launch_exe(command)
+
+    def _launch_exe(self, command: list[str]):
+        with self._lock_launch_game:
+            subprocess.Popen(command, stdout=sys.stdout, stderr=sys.stderr, text=True)
+            sleep(1)
 
 
 def main():
@@ -73,7 +101,7 @@ def main():
     server.start()
 
     server.launch_dofus("ezrealeu44700_1@outlook.com")
-    server.launch_dofus("ezrealeu44700_2@outlook.com")
+    # server.launch_dofus("ezrealeu44700_2@outlook.com")
 
     while True:
         sleep(1)

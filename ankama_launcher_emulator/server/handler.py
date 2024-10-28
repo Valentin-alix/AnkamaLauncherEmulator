@@ -39,5 +39,8 @@ class AnkamaLauncherHandler:
         res = self.infos_by_hash[hash].haapi.createToken(gameId, certificate_datas)
         return res
 
+    def updater_isUpdateAvailable(self, gameSession: str):
+        return False
+
     def zaapMustUpdate_get(self, gameSession: str) -> bool:
         return False

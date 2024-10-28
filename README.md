@@ -9,3 +9,8 @@ Pour lancer un compte aller dans src/server/server.py, modifiez le login et lanc
 ### Installer le package
 
 `poetry add git+https://github.com/Valentin-alix/AnkamaLauncherEmulator`
+
+### Debugging
+
+`asar extract "C://Program Files//Ankama//Ankama Launcher//resources//app.asar" "D:\Ankama Games\AnkamaLau
+ncher/AnkaLauncherExtracted"`
