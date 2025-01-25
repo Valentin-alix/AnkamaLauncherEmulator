@@ -1,4 +1,3 @@
-import os
 import subprocess
 import sys
 from typing import Any
@@ -8,7 +7,6 @@ from pathlib import Path
 from threading import Lock, Thread
 from time import sleep
 import nt
-import frida
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
@@ -17,7 +15,6 @@ from thrift.transport import TSocket, TTransport
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 from ankama_launcher_emulator.consts import (
-    GAME_ID_BY_NAME,
     DOFUS_PATH,
 )
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
@@ -37,7 +34,7 @@ class AnkamaLauncherServer:
 
     def start(self):
         processor = ZaapService.Processor(self.handler)
-        transport = TSocket.TServerSocket(host="127.0.0.1", port=26116)
+        transport = TSocket.TServerSocket(host="0.0.0.0", port=26116)
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
@@ -50,9 +47,11 @@ class AnkamaLauncherServer:
         self.instance_id += 1
 
         api_key = CryptoHelper.getStoredApiKey(login)["apikey"]["key"]
-
         self.handler.infos_by_hash[random_hash] = AccountGameInfo(
-            login, GAME_ID_BY_NAME[GameNameEnum.DOFUS], api_key, Haapi(api_key)
+            login=login,
+            game_id=102,
+            api_key=api_key,
+            haapi=Haapi(api_key),
         )
         _thread = Thread(
             target=lambda: self._launch_dofus_exe(random_hash), daemon=True
@@ -91,7 +90,7 @@ class AnkamaLauncherServer:
         ]
         env = {
             "ZAAP_CAN_AUTH": "true",
-            "ZAAP_GAME": "dofus",
+            "ZAAP_GAME": GameNameEnum.DOFUS.value,
             "ZAAP_HASH": random_hash,
             "ZAAP_INSTANCE_ID": str(self.instance_id),
             "ZAAP_LOGS_PATH": log_path,
@@ -119,8 +118,8 @@ def main():
     server = AnkamaLauncherServer(handler)
     server.start()
 
-    server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
-    # server.launch_dofus("ezrealeu44700_2@outlook.com")
+    # server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
+    server.launch_dofus("ezrealeu44700_2@outlook.com")
 
     while True:
         sleep(1)

@@ -38,7 +38,6 @@ class Haapi:
     def signOnWithApiKey(self, game_id: int) -> dict[str, Any]:
         """get users infos"""
         url = ANKAMA_ACCOUNT_SIGN_ON_WITH_API_KEY
-
         response = self.zaap_session.post(url, json={"game": game_id})
         response.raise_for_status()
         body = response.json()

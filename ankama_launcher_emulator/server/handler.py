@@ -22,7 +22,37 @@ class AnkamaLauncherHandler:
         user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
             int(self.infos_by_hash[hash].game_id)
         )
-        added_date = isoparse(user_infos["game"]["added_date"])
+        print(f"user info from signOnWithApiKey : {user_infos}")
+        sent_from_official_launcher = isoparse(user_infos["game"]["added_date"])
+        {
+            "id": 181213928,
+            "type": "ANKAMA",
+            "login": "ezrealeu44700_2@outlook.com",
+            "nickname": "ezrealeuTwo",
+            "firstname": "A*****",
+            "lastname": "V*****",
+            "nicknameWithTag": "ezrealeuTwo#2379",
+            "tag": 2379,
+            "security": ["SHIELD"],
+            "addedDate": "2024-08-17T14:07:55+02:00",
+            "locked": "0",
+            "parentEmailStatus": None,
+            "avatar": "https://avatar.ankama.com/users/181213928.png",
+            "isGuest": False,
+            "isErrored": False,
+            "needRefresh": False,
+            "active": True,
+            "gameList": [
+                {
+                    "isFreeToPlay": False,
+                    "isFormerSubscriber": False,
+                    "isSubscribed": True,
+                    "totalPlayTime": 2981065,
+                    "endOfSubscribe": "2025-02-19T18:39:05+01:00",
+                    "id": 1,
+                }
+            ],
+        }
         expected = {
             "id": user_infos["account"],
             "type": "ANKAMA",
@@ -44,13 +74,10 @@ class AnkamaLauncherHandler:
             "gameList": [
                 {
                     "isFreeToPlay": False,
-                    "isFormerSubscriber": user_infos["game"]["first_subscription_date"]
-                    is not None,
+                    "isFormerSubscriber": False,
                     "isSubscribed": user_infos["game"]["subscribed"],
-                    "totalPlayTime": (
-                        datetime.now(tz=added_date.tzinfo) - added_date
-                    ).total_seconds(),
-                    "endOfSubscribe": None,
+                    "totalPlayTime": user_infos["game"]["total_time_elapsed"],
+                    "endOfSubscribe": user_infos["game"]["expiration_date"],
                     "id": 1,
                 }
             ],
@@ -60,7 +87,7 @@ class AnkamaLauncherHandler:
     def settings_get(self, hash: str, key: str) -> str:
         match key:
             case "autoConnectType":
-                return '"1"'
+                return '"2"'
             case "language":
                 return '"fr"'
             case "connectionPort":
