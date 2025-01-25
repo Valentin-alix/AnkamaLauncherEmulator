@@ -12,6 +12,8 @@ thrift = "^0.20.0"
 psutil = ">3.0.0"
 wmi = "^1.5.1"
 pycryptodomex = "^3.21.0"
+frida = "^16.6.5"
+python-dateutil = "^2.9.0.post0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"

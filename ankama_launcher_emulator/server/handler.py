@@ -1,7 +1,9 @@
+from datetime import datetime
+import json
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
 
-
+from dateutil.parser import isoparse
 from dataclasses import dataclass, field
 
 
@@ -20,7 +22,40 @@ class AnkamaLauncherHandler:
         user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
             int(self.infos_by_hash[hash].game_id)
         )
-        return str(user_infos)
+        added_date = isoparse(user_infos["game"]["added_date"])
+        expected = {
+            "id": user_infos["account"],
+            "type": "ANKAMA",
+            "login": user_infos["account"]["login"],
+            "nickname": user_infos["account"]["nickname"],
+            "firstname": user_infos["account"]["firstname"],
+            "lastname": user_infos["account"]["lastname"],
+            "nicknameWithTag": f"{user_infos['account']['nickname']}#{user_infos['account']['tag']}",
+            "tag": user_infos["account"]["tag"],
+            "security": user_infos["account"]["security"],
+            "addedDate": user_infos["account"]["added_date"],
+            "locked": user_infos["account"]["locked"],
+            "parentEmailStatus": user_infos["account"]["parent_email_status"],
+            "avatar": user_infos["account"]["avatar_url"],
+            "isGuest": False,
+            "isErrored": False,
+            "needRefresh": False,
+            "active": user_infos["account"]["is_otp_active"],
+            "gameList": [
+                {
+                    "isFreeToPlay": False,
+                    "isFormerSubscriber": user_infos["game"]["first_subscription_date"]
+                    is not None,
+                    "isSubscribed": user_infos["game"]["subscribed"],
+                    "totalPlayTime": (
+                        datetime.now(tz=added_date.tzinfo) - added_date
+                    ).total_seconds(),
+                    "endOfSubscribe": None,
+                    "id": 1,
+                }
+            ],
+        }
+        return json.dumps(expected)
 
     def settings_get(self, hash: str, key: str) -> str:
         match key:

@@ -1,19 +1,25 @@
+import os
 import subprocess
 import sys
+from typing import Any
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock, Thread
 from time import sleep
-
+import nt
+import frida
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
-from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from ankama_launcher_emulator.consts import GAME_ID_BY_NAME, DOFUS_BETA, DOFUS_PATH
+from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
+from ankama_launcher_emulator.consts import (
+    GAME_ID_BY_NAME,
+    DOFUS_PATH,
+)
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.haapi.haapi import Haapi
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
@@ -26,15 +32,17 @@ class AnkamaLauncherServer:
     handler: AnkamaLauncherHandler
     instance_id: int = field(init=False, default=0)
     _lock_launch_game: Lock = field(init=False, default_factory=Lock)
+    _server_thread: Thread | None = None
+    _dofus_threads: list[Thread] = field(init=False, default_factory=list)
 
     def start(self):
         processor = ZaapService.Processor(self.handler)
-        transport = TSocket.TServerSocket(host="localhost", port=26116)
+        transport = TSocket.TServerSocket(host="127.0.0.1", port=26116)
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
-        thread = Thread(target=server.serve, daemon=True)
-        thread.start()
+        self._server_thread = Thread(target=server.serve, daemon=True)
+        self._server_thread.start()
 
     def launch_dofus(self, login: str):
         print(f"Launch dofus game {login}")
@@ -46,52 +54,63 @@ class AnkamaLauncherServer:
         self.handler.infos_by_hash[random_hash] = AccountGameInfo(
             login, GAME_ID_BY_NAME[GameNameEnum.DOFUS], api_key, Haapi(api_key)
         )
-        Thread(target=lambda: self._launch_dofus_exe(random_hash), daemon=True).start()
+        _thread = Thread(
+            target=lambda: self._launch_dofus_exe(random_hash), daemon=True
+        )
+        _thread.start()
+        self._dofus_threads.append(_thread)
 
     def _launch_dofus_exe(self, random_hash: str):
+        log_path = (
+            r"C:\Users\valen\AppData\Roaming\zaap\gamesLogs\dofus-dofus3/dofus.log"
+        )
         command = [
-            DOFUS_PATH,
-            "--port=26116",
-            f"--gameName={GameNameEnum.DOFUS}",
-            "--gameRelease=main",
-            f"--instanceId={self.instance_id}",
-            f"--hash={random_hash}",
-            "--canLogin=true",
-        ]
-        self._launch_exe(command)
-
-    def _launch_dofus_beta_exe(self, random_hash: str):
-        # FIXME
-        command = [
-            DOFUS_BETA,
+            "Dofus.exe",
             "--port",
             "26116",
             "--gameName",
-            GameNameEnum.DOFUS,
+            GameNameEnum.DOFUS.value,
             "--gameRelease",
-            "beta",
+            "dofus3",
             "--instanceId",
-            f"{self.instance_id}",
+            str(self.instance_id),
             "--hash",
             random_hash,
             "--canLogin",
             "true",
             "-logFile",
-            "C:\\Users\\valen\\AppData\\Roaming\\zaap\\gamesLogs\\dofus-beta/dofus.log"
+            log_path,
             "--langCode",
             "fr",
             "--autoConnectType",
-            "1",
+            "2",
             "--connectionPort",
             "5555",
             "--configUrl",
-            "https://dofus2.cdn.ankama.com/config/beta_windows.json",
+            r"https://dofus2.cdn.ankama.com/config/release_windows.json",
         ]
-        self._launch_exe(command)
+        env = {
+            "ZAAP_CAN_AUTH": "true",
+            "ZAAP_GAME": "dofus",
+            "ZAAP_HASH": random_hash,
+            "ZAAP_INSTANCE_ID": str(self.instance_id),
+            "ZAAP_LOGS_PATH": log_path,
+            "ZAAP_PORT": "26116",
+            "ZAAP_RELEASE": "dofus3",
+        }
 
-    def _launch_exe(self, command: list[str]):
+        self._launch_exe(command, env)
+
+    def _launch_exe(self, command: list[str], env: dict[str, Any]):
         with self._lock_launch_game:
-            subprocess.Popen(command, stdout=sys.stdout, stderr=sys.stderr, text=True)
+            subprocess.Popen(
+                command,
+                cwd=Path(DOFUS_PATH).parent,
+                env=nt.environ.copy()
+                | env,  # original env (without converting to uppercase) + custom zaap env
+                start_new_session=True,
+                shell=True,
+            )
             sleep(1)
 
 
@@ -100,7 +119,7 @@ def main():
     server = AnkamaLauncherServer(handler)
     server.start()
 
-    server.launch_dofus("ezrealeu44700_1@outlook.com")
+    server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
     # server.launch_dofus("ezrealeu44700_2@outlook.com")
 
     while True:
@@ -108,4 +127,5 @@ def main():
 
 
 if __name__ == "__main__":
+    # ./Ankama\ Launcher.exe --inspect --remote-debugging-port=8315
     main()
