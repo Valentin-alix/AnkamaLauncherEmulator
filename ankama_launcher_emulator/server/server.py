@@ -16,6 +16,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 from ankama_launcher_emulator.consts import (
     DOFUS_PATH,
+    OFFICIAL_CONFIG_URL,
 )
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.haapi.haapi import Haapi
@@ -54,7 +55,11 @@ class AnkamaLauncherServer:
         )
         Thread(target=lambda: self._launch_dofus_exe(random_hash), daemon=True).start()
 
-    def _launch_dofus_exe(self, random_hash: str):
+    def _launch_dofus_exe(
+        self,
+        random_hash: str,
+        config_url: str = OFFICIAL_CONFIG_URL,
+    ):
         log_path = (
             r"C:\Users\valen\AppData\Roaming\zaap\gamesLogs\dofus-dofus3/dofus.log"
         )
@@ -81,7 +86,7 @@ class AnkamaLauncherServer:
             "--connectionPort",
             "5555",
             "--configUrl",
-            r"https://dofus2.cdn.ankama.com/config/release_windows.json",
+            config_url,
         ]
         env = {
             "ZAAP_CAN_AUTH": "true",
