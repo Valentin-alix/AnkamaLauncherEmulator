@@ -41,7 +41,6 @@ class AnkamaLauncherServer:
         Thread(target=server.serve, daemon=True).start()
 
     def launch_dofus(self, login: str, config_url: str = OFFICIAL_CONFIG_URL) -> int:
-        print(f"Launch dofus game {login}")
         random_hash = str(uuid.uuid4())
         self.instance_id += 1
 

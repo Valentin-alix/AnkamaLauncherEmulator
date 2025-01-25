@@ -22,7 +22,6 @@ class AnkamaLauncherHandler:
         user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
             int(self.infos_by_hash[hash].game_id)
         )
-        print(f"user info from signOnWithApiKey : {user_infos}")
         sent_from_official_launcher = isoparse(user_infos["game"]["added_date"])
         {
             "id": 181213928,
