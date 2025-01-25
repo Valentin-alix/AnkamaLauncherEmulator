@@ -38,8 +38,7 @@ class AnkamaLauncherServer:
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
-        self._server_thread = Thread(target=server.serve, daemon=True)
-        self._server_thread.start()
+        Thread(target=server.serve, daemon=True).start()
 
     def launch_dofus(self, login: str):
         print(f"Launch dofus game {login}")
@@ -53,11 +52,7 @@ class AnkamaLauncherServer:
             api_key=api_key,
             haapi=Haapi(api_key),
         )
-        _thread = Thread(
-            target=lambda: self._launch_dofus_exe(random_hash), daemon=True
-        )
-        _thread.start()
-        self._dofus_threads.append(_thread)
+        Thread(target=lambda: self._launch_dofus_exe(random_hash), daemon=True).start()
 
     def _launch_dofus_exe(self, random_hash: str):
         log_path = (
