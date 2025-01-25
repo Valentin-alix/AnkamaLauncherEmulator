@@ -40,7 +40,7 @@ class AnkamaLauncherServer:
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
         Thread(target=server.serve, daemon=True).start()
 
-    def launch_dofus(self, login: str) -> int:
+    def launch_dofus(self, login: str, config_url: str = OFFICIAL_CONFIG_URL) -> int:
         print(f"Launch dofus game {login}")
         random_hash = str(uuid.uuid4())
         self.instance_id += 1
@@ -52,13 +52,9 @@ class AnkamaLauncherServer:
             api_key=api_key,
             haapi=Haapi(api_key),
         )
-        return self._launch_dofus_exe(random_hash)
+        return self._launch_dofus_exe(random_hash, config_url)
 
-    def _launch_dofus_exe(
-        self,
-        random_hash: str,
-        config_url: str = OFFICIAL_CONFIG_URL,
-    ) -> int:
+    def _launch_dofus_exe(self, random_hash: str, config_url: str) -> int:
         log_path = (
             r"C:\Users\valen\AppData\Roaming\zaap\gamesLogs\dofus-dofus3/dofus.log"
         )
