@@ -58,7 +58,7 @@ class AnkamaLauncherServer:
             r"C:\Users\valen\AppData\Roaming\zaap\gamesLogs\dofus-dofus3/dofus.log"
         )
         command = [
-            "Dofus.exe",
+            DOFUS_PATH,
             "--port",
             "26116",
             "--gameName",
@@ -97,11 +97,9 @@ class AnkamaLauncherServer:
     def _launch_exe(self, command: list[str], env: dict[str, Any]) -> int:
         process = subprocess.Popen(
             command,
-            cwd=Path(DOFUS_PATH).parent,
             env=nt.environ.copy()
             | env,  # original env (without converting to uppercase) + custom zaap env
             start_new_session=True,
-            shell=True,
         )
         return process.pid
 
@@ -111,7 +109,7 @@ def main():
     server = AnkamaLauncherServer(handler)
     server.start()
 
-    server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
+    # server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
     server.launch_dofus("ezrealeu44700_2@outlook.com")
 
     while True:
