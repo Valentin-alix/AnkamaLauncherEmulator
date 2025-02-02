@@ -110,7 +110,7 @@ def main():
     server.start()
 
     # server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
-    server.launch_dofus("ezrealeu44700_2@outlook.com")
+    server.launch_dofus("ezrealeu44700_1+s2@outlook.com")
 
     while True:
         sleep(1)
