@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from typing import Any
@@ -54,8 +55,13 @@ class AnkamaLauncherServer:
         return self._launch_dofus_exe(random_hash, config_url)
 
     def _launch_dofus_exe(self, random_hash: str, config_url: str) -> int:
-        log_path = (
-            r"C:\Users\valen\AppData\Roaming\zaap\gamesLogs\dofus-dofus3/dofus.log"
+        log_path = os.path.join(
+            os.environ["LOCALAPPDATA"],
+            "Roaming",
+            "zaap",
+            "gamesLogs",
+            "dofus-dofus3",
+            "dofus.log",
         )
         command = [
             DOFUS_PATH,
@@ -110,7 +116,7 @@ def main():
     server.start()
 
     # server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
-    server.launch_dofus("ezrealeu44700_1+s2@outlook.com")
+    server.launch_dofus("ezrealeu44700_2+s1@outlook.com")
 
     while True:
         sleep(1)
