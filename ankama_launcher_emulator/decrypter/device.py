@@ -1,12 +1,13 @@
 import hashlib
 import math
-import platform
-import subprocess
 import os
+import platform
 import re
+import subprocess
+
 import psutil
-import wmi
 import pythoncom
+import wmi
 
 
 class Device:
@@ -90,7 +91,7 @@ class Device:
 
     @staticmethod
     def getCpuLength() -> int:
-        return psutil.cpu_count(logical=True)
+        return psutil.cpu_count(logical=True) or 0
 
     @staticmethod
     def getCpuModel() -> str:

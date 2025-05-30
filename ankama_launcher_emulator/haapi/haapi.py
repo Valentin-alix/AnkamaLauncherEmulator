@@ -1,19 +1,19 @@
+import sys
 from dataclasses import dataclass
 from pathlib import Path
-import sys
 from typing import Any
-import requests
 
+import requests
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
-from ankama_launcher_emulator.interfaces.deciphered_cert import DecipheredCertifDatas
 from ankama_launcher_emulator.haapi.urls import (
     ANKAMA_ACCOUNT_CREATE_TOKEN,
     ANKAMA_ACCOUNT_SIGN_ON_WITH_API_KEY,
 )
 from ankama_launcher_emulator.haapi.zaap_version import ZAAP_VERSION
+from ankama_launcher_emulator.interfaces.deciphered_cert import DecipheredCertifDatas
 
 
 @dataclass

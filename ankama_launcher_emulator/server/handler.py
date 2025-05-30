@@ -1,10 +1,8 @@
-from datetime import datetime
 import json
+from dataclasses import dataclass, field
+
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
-
-from dateutil.parser import isoparse
-from dataclasses import dataclass, field
 
 
 @dataclass
@@ -22,36 +20,7 @@ class AnkamaLauncherHandler:
         user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
             int(self.infos_by_hash[hash].game_id)
         )
-        sent_from_official_launcher = isoparse(user_infos["game"]["added_date"])
-        {
-            "id": 181213928,
-            "type": "ANKAMA",
-            "login": "ezrealeu44700_2@outlook.com",
-            "nickname": "ezrealeuTwo",
-            "firstname": "A*****",
-            "lastname": "V*****",
-            "nicknameWithTag": "ezrealeuTwo#2379",
-            "tag": 2379,
-            "security": ["SHIELD"],
-            "addedDate": "2024-08-17T14:07:55+02:00",
-            "locked": "0",
-            "parentEmailStatus": None,
-            "avatar": "https://avatar.ankama.com/users/181213928.png",
-            "isGuest": False,
-            "isErrored": False,
-            "needRefresh": False,
-            "active": True,
-            "gameList": [
-                {
-                    "isFreeToPlay": False,
-                    "isFormerSubscriber": False,
-                    "isSubscribed": True,
-                    "totalPlayTime": 2981065,
-                    "endOfSubscribe": "2025-02-19T18:39:05+01:00",
-                    "id": 1,
-                }
-            ],
-        }
+        # sent_from_official_launcher = isoparse(user_infos["game"]["added_date"])
         expected = {
             "id": user_infos["account"],
             "type": "ANKAMA",
