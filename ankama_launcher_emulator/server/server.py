@@ -1,29 +1,33 @@
+import nt
 import os
 import subprocess
 import sys
-from typing import Any
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from threading import Lock, Thread
+from signal import SIGTERM
+from threading import Thread
 from time import sleep
-import nt
+from typing import Any
+
+from psutil import process_iter
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
-
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 from ankama_launcher_emulator.consts import (
     DOFUS_PATH,
     OFFICIAL_CONFIG_URL,
 )
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
+from ankama_launcher_emulator.gen_zaap.zaap import ZaapService
 from ankama_launcher_emulator.haapi.haapi import Haapi
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
+from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 from ankama_launcher_emulator.server.handler import AnkamaLauncherHandler
-from ankama_launcher_emulator.gen_zaap.zaap import ZaapService
+
+LAUNCHER_PORT = 26116
 
 
 @dataclass
@@ -34,8 +38,12 @@ class AnkamaLauncherServer:
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
 
     def start(self):
+        for proc in process_iter():
+            for conns in proc.net_connections(kind="inet"):
+                if conns.laddr.port == LAUNCHER_PORT:
+                    proc.send_signal(SIGTERM)
         processor = ZaapService.Processor(self.handler)
-        transport = TSocket.TServerSocket(host="0.0.0.0", port=26116)
+        transport = TSocket.TServerSocket(host="0.0.0.0", port=LAUNCHER_PORT)
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
@@ -116,7 +124,7 @@ def main():
     server.start()
 
     # server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
-    server.launch_dofus("ezrealeu44700_2+s1@outlook.com")
+    # server.launch_dofus("ezrealeu44700_2+s1@outlook.com")
 
     while True:
         sleep(1)
