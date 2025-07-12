@@ -39,6 +39,8 @@ class AnkamaLauncherServer:
 
     def start(self):
         for proc in process_iter():
+            if proc.pid == 0:
+                continue
             for conns in proc.net_connections(kind="inet"):
                 if conns.laddr.port == LAUNCHER_PORT:
                     proc.send_signal(SIGTERM)
