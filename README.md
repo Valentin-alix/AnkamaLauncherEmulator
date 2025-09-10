@@ -1,16 +1,29 @@
-## Ankama Launcher Emulator
+# Ankama Launcher Emulator
 
-Pour générer du code a partir de zaap.thrift :
-`thrift --gen py resources/zaap.thrift && mv gen-py src/gen_zaap`
+## Code Generation
 
-Pour lancer un compte aller dans src/server/server.py, modifiez le login et lancer le script :
-`python src/server/server.py`
+To generate code from `zaap.thrift`:
+```bash
+thrift --gen py resources/zaap.thrift && mv gen-py src/gen_zaap
+```
 
-### Installer le package
+## Running an Account
 
-`poetry add git+https://github.com/Valentin-alix/AnkamaLauncherEmulator`
+Go to `src/server/server.py`, modify the login, then run:
+```bash
+python src/server/server.py
+```
 
-### Debugging
+## Installation
 
-`asar extract "C://Program Files//Ankama//Ankama Launcher//resources//app.asar" "D:\Ankama Games\AnkamaLau
-ncher/AnkaLauncherExtracted"`
+Install the package:
+```bash
+poetry add git+https://github.com/Valentin-alix/AnkamaLauncherEmulator
+```
+
+## Debugging
+
+Extract the `app.asar` file:
+```bash
+asar extract "C://Program Files//Ankama//Ankama Launcher//resources//app.asar" "D:/Ankama Games/AnkamaLauncher/AnkaLauncherExtracted"
+```
