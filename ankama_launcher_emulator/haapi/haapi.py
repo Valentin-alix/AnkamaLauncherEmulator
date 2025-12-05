@@ -1,9 +1,12 @@
+import socket
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import requests
+
+from ankama_launcher_emulator.internet_utils import retry_internet
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
@@ -35,6 +38,7 @@ class Haapi:
         }
         self.zaap_session.headers.update(self.zaap_headers)
 
+    @retry_internet
     def signOnWithApiKey(self, game_id: int) -> dict[str, Any]:
         """get users infos"""
         url = ANKAMA_ACCOUNT_SIGN_ON_WITH_API_KEY
@@ -43,6 +47,7 @@ class Haapi:
         body = response.json()
         return body
 
+    @retry_internet
     def createToken(self, game_id: int, certif: DecipheredCertifDatas) -> str:
         # https://haapi.ankama.com/json/Ankama/v5/Account/CreateToken?game=1&certificate_id=407269037&certificate_hash=4c4ab1b3684623f7
         """create gameToken based on parameters"""

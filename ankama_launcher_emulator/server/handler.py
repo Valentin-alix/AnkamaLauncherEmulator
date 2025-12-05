@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
+from ankama_launcher_emulator.internet_utils import retry_internet
 
 
 @dataclass
@@ -11,11 +12,13 @@ class AnkamaLauncherHandler:
         init=False, default_factory=lambda: {}
     )
 
+    @retry_internet
     def connect(
         self, gameName: str, releaseName: str, instanceId: int, hash: str
     ) -> str:
         return hash
 
+    @retry_internet
     def userInfo_get(self, hash: str) -> str:
         user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
             int(self.infos_by_hash[hash].game_id)
@@ -52,6 +55,7 @@ class AnkamaLauncherHandler:
         }
         return json.dumps(expected)
 
+    @retry_internet
     def settings_get(self, hash: str, key: str) -> str:
         match key:
             case "autoConnectType":
@@ -62,6 +66,7 @@ class AnkamaLauncherHandler:
                 return '"5555"'
         raise NotImplementedError
 
+    @retry_internet
     def auth_getGameToken(self, hash: str, gameId: int) -> str:
         certificate_datas = CryptoHelper.getStoredCertificate(
             self.infos_by_hash[hash].login
@@ -69,8 +74,10 @@ class AnkamaLauncherHandler:
         res = self.infos_by_hash[hash].haapi.createToken(gameId, certificate_datas)
         return res
 
+    @retry_internet
     def updater_isUpdateAvailable(self, gameSession: str):
         return False
 
+    @retry_internet
     def zaapMustUpdate_get(self, gameSession: str) -> bool:
         return False
