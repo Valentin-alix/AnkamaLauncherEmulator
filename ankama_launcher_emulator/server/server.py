@@ -125,13 +125,13 @@ def main():
     server = AnkamaLauncherServer(handler)
     server.start()
 
-    # server.launch_dofus("ezrealeu44700_1+s1@outlook.com")
-    # server.launch_dofus("ezrealeu44700_2+s1@outlook.com")
+    server.launch_dofus("pcmain_blibli_1_0@outlook.fr")
 
     while True:
         sleep(1)
 
 
 if __name__ == "__main__":
+    # [NETWORK] Error: HTTPSConnectionPool(host='haapi.ankama.com', port=443): Max retries exceeded with url: /json/Ankama/v5/Account/SignOnWithApiKey (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)'))). Retrying
     # ./Ankama\ Launcher.exe --inspect --remote-debugging-port=8315
     main()

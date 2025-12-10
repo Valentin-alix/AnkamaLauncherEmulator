@@ -14,4 +14,4 @@ with open(RELEASE_JSON_PATH, "r") as file:
 
 CERTIFICATE_FOLDER_PATH = os.path.join(ZAAP_PATH, "certificate")
 API_KEY_FOLDER_PATH = os.path.join(ZAAP_PATH, "keydata")
-OFFICIAL_CONFIG_URL = r"https://dofus2.cdn.ankama.com/config/release_windows.json"
+OFFICIAL_CONFIG_URL = r"https://dofus2.cdn.ankama.com/config/dofus3.json"

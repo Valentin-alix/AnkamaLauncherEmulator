@@ -25,6 +25,7 @@ class Haapi:
 
     def __post_init__(self):
         self.zaap_session = requests.Session()
+        self.zaap_session.verify = str(Path.home() / ".mitmproxy/mitmproxy-ca.pem")
         self.zaap_headers = {
             "apikey": self.api_key,
             "if-none-match": "null",

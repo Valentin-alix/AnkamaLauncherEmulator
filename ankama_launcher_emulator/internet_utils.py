@@ -10,6 +10,7 @@ def retry_internet(func):
             except Exception as err:
                 print(f"[NETWORK] Error: {err}. Retrying…")
                 ensure_internet()
+            sleep(5)
 
     return wrapper
 
