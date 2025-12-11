@@ -4,10 +4,15 @@ import os
 import platform
 import re
 import subprocess
+import sys
 
 import psutil
 import pythoncom
-import wmi
+
+if sys.platform == "win32":
+    import wmi
+else:
+    wmi = None
 
 
 class Device:
@@ -97,6 +102,7 @@ class Device:
     def getCpuModel() -> str:
         if psutil.WINDOWS:
             pythoncom.CoInitialize()
+            assert wmi
             _wmi = wmi.WMI()
             cpu_info = _wmi.Win32_Processor()[0]
             cpu_model = cpu_info.Name
