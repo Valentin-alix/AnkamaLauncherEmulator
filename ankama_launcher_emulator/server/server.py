@@ -1,4 +1,3 @@
-import nt
 import os
 import subprocess
 import sys
@@ -16,10 +15,7 @@ from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from ankama_launcher_emulator.consts import (
-    DOFUS_PATH,
-    OFFICIAL_CONFIG_URL,
-)
+from ankama_launcher_emulator.consts import DOFUS_PATH, OFFICIAL_CONFIG_URL
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.gen_zaap.zaap import ZaapService
 from ankama_launcher_emulator.haapi.haapi import Haapi
@@ -113,8 +109,7 @@ class AnkamaLauncherServer:
     def _launch_exe(self, command: list[str], env: dict[str, Any]) -> int:
         process = subprocess.Popen(
             command,
-            env=nt.environ.copy()
-            | env,  # original env (without converting to uppercase) + custom zaap env
+            env=os.environ.copy() | env,  # original env (without converting to uppercase) + custom zaap env
             start_new_session=True,
         )
         return process.pid
@@ -125,7 +120,7 @@ def main():
     server = AnkamaLauncherServer(handler)
     server.start()
 
-    server.launch_dofus("pcmain_blibli_1_0@outlook.fr")
+    # server.launch_dofus("pcmain_blibli_1_0@outlook.fr")
 
     while True:
         sleep(1)
