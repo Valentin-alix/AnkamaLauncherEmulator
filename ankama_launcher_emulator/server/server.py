@@ -33,7 +33,7 @@ class AnkamaLauncherServer:
     _server_thread: Thread | None = None
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
 
-    def start(self):
+    def start(self, host_ip: str = "0.0.0.0"):
         for proc in process_iter():
             if proc.pid == 0:
                 continue
@@ -41,7 +41,7 @@ class AnkamaLauncherServer:
                 if conns.laddr.port == LAUNCHER_PORT:
                     proc.send_signal(SIGTERM)
         processor = ZaapService.Processor(self.handler)
-        transport = TSocket.TServerSocket(host="0.0.0.0", port=LAUNCHER_PORT)
+        transport = TSocket.TServerSocket(host=host_ip, port=LAUNCHER_PORT)
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
@@ -109,7 +109,8 @@ class AnkamaLauncherServer:
     def _launch_exe(self, command: list[str], env: dict[str, Any]) -> int:
         process = subprocess.Popen(
             command,
-            env=os.environ.copy() | env,  # original env (without converting to uppercase) + custom zaap env
+            env=os.environ.copy()
+            | env,  # original env (without converting to uppercase) + custom zaap env
             start_new_session=True,
         )
         return process.pid
