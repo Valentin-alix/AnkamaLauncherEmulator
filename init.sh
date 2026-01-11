@@ -2,4 +2,4 @@
 
 set -e
 
-poetry run poetry install
+uv sync

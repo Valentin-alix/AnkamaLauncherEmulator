@@ -1,12 +1,24 @@
-import socket
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import requests
+from requests.adapters import HTTPAdapter
 
 from ankama_launcher_emulator.internet_utils import retry_internet
+
+
+class InterfaceAdapter(HTTPAdapter):
+    """Adapter to bind requests to a specific network interface."""
+
+    def __init__(self, source_ip: str, **kwargs):
+        self.source_ip = source_ip
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs["source_address"] = (self.source_ip, 0)
+        super().init_poolmanager(*args, **kwargs)
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
@@ -22,10 +34,15 @@ from ankama_launcher_emulator.interfaces.deciphered_cert import DecipheredCertif
 @dataclass
 class Haapi:
     api_key: str
+    source_ip: str | None = None
 
     def __post_init__(self):
         self.zaap_session = requests.Session()
         self.zaap_session.verify = str(Path.home() / ".mitmproxy/mitmproxy-ca.pem")
+        if self.source_ip:
+            adapter = InterfaceAdapter(self.source_ip)
+            self.zaap_session.mount("https://", adapter)
+            self.zaap_session.mount("http://", adapter)
         self.zaap_headers = {
             "apikey": self.api_key,
             "if-none-match": "null",

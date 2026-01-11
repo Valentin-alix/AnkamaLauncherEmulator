@@ -1,7 +1,28 @@
 {
-  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
-  "python.testing.pytestEnabled": false,
-  "python.testing.unittestEnabled": true,
   "editor.formatOnSave": true,
-  "python.envFile": "${workspaceFolder}/.paths.env"
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.organizeImports": "always",
+    }
+  },
+  "python.languageServer": "None",
+  "ty.importStrategy": "fromEnvironment",
+  "ruff.importStrategy": "fromEnvironment",
+  "editor.codeLens": false,
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "./tests",
+    "-p",
+    "test_*.py"
+  ],
+  "python.testing.unittestEnabled": true
 }

@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "charliermarsh.ruff",
+        "ms-python.python",
+        "ms-python.pylance",
+        "astral-sh.ty",
+        "pbkit.vscode-pbkit"
+    ]
+}

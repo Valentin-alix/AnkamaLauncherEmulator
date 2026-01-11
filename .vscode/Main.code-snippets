@@ -1,0 +1,8 @@
+{
+	"Main": {
+		"prefix": "Main",
+		"body": [
+			"if __name__ == '__main__':\n\t"
+		]
+	}
+}

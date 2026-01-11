@@ -32,8 +32,10 @@ class AnkamaLauncherServer:
     instance_id: int = field(init=False, default=0)
     _server_thread: Thread | None = None
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
+    _source_ip: str | None = field(init=False, default=None)
 
-    def start(self, host_ip: str = "0.0.0.0"):
+    def start(self, host_ip: str = "0.0.0.0", source_ip: str | None = None):
+        self._source_ip = source_ip
         for proc in process_iter():
             if proc.pid == 0:
                 continue
@@ -41,7 +43,7 @@ class AnkamaLauncherServer:
                 if conns.laddr.port == LAUNCHER_PORT:
                     proc.send_signal(SIGTERM)
         processor = ZaapService.Processor(self.handler)
-        transport = TSocket.TServerSocket(host=host_ip, port=LAUNCHER_PORT)
+        transport = TSocket.TServerSocket(host="0.0.0.0", port=LAUNCHER_PORT)
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
@@ -56,7 +58,7 @@ class AnkamaLauncherServer:
             login=login,
             game_id=102,
             api_key=api_key,
-            haapi=Haapi(api_key),
+            haapi=Haapi(api_key, source_ip=self._source_ip),
         )
         return self._launch_dofus_exe(random_hash, config_url)
 

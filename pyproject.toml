@@ -7,7 +7,7 @@ name = "ankama_launcher_emulator"
 version = "0.1.0"
 description = ""
 authors = [{ name = "Valentin Alix", email = "valentin-alix.850@outlook.fr" }]
-requires-python = ">3.11"
+requires-python = ">=3.12"
 readme = "README.md"
 dependencies = [
     "requests>1.0.0",
