@@ -7,8 +7,7 @@
       "source.organizeImports": "always",
     }
   },
-  "python.languageServer": "None",
-  "ty.importStrategy": "fromEnvironment",
+  "python.languageServer": "Pylance",
   "ruff.importStrategy": "fromEnvironment",
   "editor.codeLens": false,
   "[jsonc]": {

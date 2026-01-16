@@ -1,16 +1,22 @@
 import socket
 from time import sleep
 
+import requests
+
 
 def retry_internet(func):
     def wrapper(*args, **kwargs):
         while True:
             try:
                 return func(*args, **kwargs)
-            except Exception as err:
+            except (
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+                socket.gaierror,
+            ) as err:
                 print(f"[NETWORK] Error: {err}. Retrying…")
                 ensure_internet()
-            sleep(5)
+            sleep(10)
 
     return wrapper
 
