@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
 from ankama_launcher_emulator.internet_utils import retry_internet
+from ankama_launcher_emulator.server.pending_tracker import get_tracker
 
 
 @dataclass
@@ -68,6 +69,8 @@ class AnkamaLauncherHandler:
 
     @retry_internet
     def auth_getGameToken(self, hash: str, gameId: int) -> str:
+        tracker = get_tracker()
+        tracker.register_connection(hash)
         certificate_datas = CryptoHelper.getStoredCertificate(
             self.infos_by_hash[hash].login
         )["certificate"]

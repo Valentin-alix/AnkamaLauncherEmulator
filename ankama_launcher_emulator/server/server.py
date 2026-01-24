@@ -14,6 +14,8 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
+from ankama_launcher_emulator.server.pending_tracker import get_tracker
+
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from ankama_launcher_emulator.consts import DOFUS_PATH, OFFICIAL_CONFIG_URL
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
@@ -34,7 +36,7 @@ class AnkamaLauncherServer:
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
     _source_ip: str | None = field(init=False, default=None)
 
-    def start(self, host_ip: str = "0.0.0.0", source_ip: str | None = None):
+    def start(self, source_ip: str | None = None):
         self._source_ip = source_ip
         for proc in process_iter():
             if proc.pid == 0:
@@ -60,7 +62,13 @@ class AnkamaLauncherServer:
             api_key=api_key,
             haapi=Haapi(api_key, source_ip=self._source_ip),
         )
-        return self._launch_dofus_exe(random_hash, config_url)
+
+        pid = self._launch_dofus_exe(random_hash, config_url)
+
+        tracker = get_tracker()
+        tracker.register_launch(random_hash)
+
+        return pid
 
     def _launch_dofus_exe(self, random_hash: str, config_url: str) -> int:
         log_path = os.path.join(
@@ -122,8 +130,6 @@ def main():
     handler = AnkamaLauncherHandler()
     server = AnkamaLauncherServer(handler)
     server.start()
-
-    # server.launch_dofus("pcmain_blibli_1_0@outlook.fr")
 
     while True:
         sleep(1)
