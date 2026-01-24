@@ -1,7 +1,7 @@
 import threading
-from time import time, sleep
-from typing import Optional
 from dataclasses import dataclass, field
+from time import sleep, time
+from typing import Optional
 
 from ankama_launcher_emulator.internet_utils import set_proxy
 
@@ -92,8 +92,6 @@ class PendingConnectionTracker:
                     set_proxy(False)
                 else:
                     print(f"[PROXY] Connection completed, {remaining} still pending")
-            else:
-                print(f"[PROXY] Warning: Unknown hash connected: {hash[:8]}...")
 
     def get_pending_count(self) -> int:
         """Return the current number of pending connections."""
