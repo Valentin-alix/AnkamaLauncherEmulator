@@ -1,9 +1,13 @@
 import json
 from dataclasses import dataclass, field
+from threading import Timer
 
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
 from ankama_launcher_emulator.internet_utils import retry_internet
+from ankama_launcher_emulator.server.pending_tracker import (
+    register_connection_after_func,
+)
 
 
 @dataclass
@@ -11,6 +15,7 @@ class AnkamaLauncherHandler:
     infos_by_hash: dict[str, AccountGameInfo] = field(
         init=False, default_factory=lambda: {}
     )
+    _timer: list[Timer] = field(init=False, default_factory=list)
 
     @retry_internet
     def connect(
@@ -67,6 +72,7 @@ class AnkamaLauncherHandler:
         raise NotImplementedError
 
     @retry_internet
+    @register_connection_after_func
     def auth_getGameToken(self, hash: str, gameId: int) -> str:
         certificate_datas = CryptoHelper.getStoredCertificate(
             self.infos_by_hash[hash].login

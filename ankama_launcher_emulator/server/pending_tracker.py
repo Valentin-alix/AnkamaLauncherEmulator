@@ -67,3 +67,13 @@ def get_tracker() -> PendingConnectionTracker:
         if _tracker is None:
             _tracker = PendingConnectionTracker()
         return _tracker
+
+
+def register_connection_after_func(func):
+    def wrapper(*args, **kwargs):
+        res = func(*args, **kwargs)
+        tracker = get_tracker()
+        tracker.register_connection()
+        return res
+
+    return wrapper

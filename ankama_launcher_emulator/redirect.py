@@ -49,9 +49,6 @@ class ChangeDofusConfig:
             flow.response.content = json.dumps(datas).encode()
             print("[PROXY] Config interceptée et modifiée")
 
-            if self.on_config_intercepted:
-                self.on_config_intercepted()
-
 
 async def start_proxy_dofus_config(
     with_logs: bool = False,
