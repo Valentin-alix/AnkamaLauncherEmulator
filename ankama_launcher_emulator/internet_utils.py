@@ -7,7 +7,8 @@ import requests
 
 def retry_internet(func):
     def wrapper(*args, **kwargs):
-        while True:
+        try_count: int = 3
+        while try_count > 0:
             try:
                 return func(*args, **kwargs)
             except (
@@ -17,6 +18,7 @@ def retry_internet(func):
             ) as err:
                 print(f"[NETWORK] Error: {err}. Retrying…")
                 ensure_internet()
+            try_count -= 1
             sleep(10)
 
     return wrapper
