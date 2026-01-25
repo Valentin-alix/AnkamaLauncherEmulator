@@ -1,9 +1,7 @@
 import threading
 from dataclasses import dataclass, field
-from time import sleep, time
-from typing import Optional
 
-from ankama_launcher_emulator.internet_utils import set_proxy
+from ankama_launcher_emulator.redirect import set_proxy
 
 
 @dataclass
@@ -13,103 +11,59 @@ class PendingConnectionTracker:
     Manages proxy state based on pending connection count.
 
     - Enables proxy when first instance launches
-    - Disables proxy when last instance connects
-    - Optionally times out stale connections
+    - Disables proxy when last instance's config is intercepted
     """
 
-    timeout_seconds: Optional[float] = 120.0
-
-    _pending_hashes: dict[str, float] = field(init=False, default_factory=dict)
+    _pending_count: int = field(init=False, default=0)
     _lock: threading.Lock = field(init=False, default_factory=threading.Lock)
-    _cleanup_thread: Optional[threading.Thread] = field(init=False, default=None)
-    _running: bool = field(init=False, default=False)
 
-    def start_cleanup_thread(self):
-        """Start background thread to clean up timed-out connections."""
-        if self.timeout_seconds is None:
-            return
-        self._running = True
-        self._cleanup_thread = threading.Thread(target=self._cleanup_loop, daemon=True)
-        self._cleanup_thread.start()
-
-    def stop_cleanup_thread(self):
-        """Stop the background cleanup thread."""
-        self._running = False
-        if self._cleanup_thread:
-            self._cleanup_thread.join(timeout=5)
-
-    def _cleanup_loop(self):
-        """Background loop to check for and remove timed-out connections."""
-        while self._running:
-            sleep(10)
-            self._cleanup_stale_connections()
-
-    def _cleanup_stale_connections(self):
-        """Remove connections that have exceeded the timeout."""
-        if self.timeout_seconds is None:
-            return
-
-        current_time = time()
-        with self._lock:
-            stale_hashes = [
-                h
-                for h, launch_time in self._pending_hashes.items()
-                if current_time - launch_time > self.timeout_seconds
-            ]
-            for h in stale_hashes:
-                print(f"[PROXY] Timing out stale connection: {h[:8]}...")
-                del self._pending_hashes[h]
-
-            if stale_hashes and len(self._pending_hashes) == 0:
-                print("[PROXY] All pending connections timed out, disabling proxy")
-                set_proxy(False)
-
-    def register_launch(self, hash: str):
+    def register_launch(self):
         """
         Register a new launch. Enables proxy if this is the first pending connection.
         """
         with self._lock:
-            was_empty = len(self._pending_hashes) == 0
-            self._pending_hashes[hash] = time()
+            was_zero = self._pending_count == 0
+            self._pending_count += 1
 
-            if was_empty:
-                print("[PROXY] First launch registered, enabling proxy")
+            if was_zero:
+                print("[PROXY] Premier lancement, activation proxy")
                 set_proxy(True)
             else:
-                print(f"[PROXY] Launch registered, {len(self._pending_hashes)} pending")
+                print(f"[PROXY] Lancement enregistré, {self._pending_count} en attente")
 
-    def register_connection(self, hash: str):
+    def register_connection(self):
         """
-        Register that a connection has completed. Disables proxy if no more pending.
+        Register that a config has been intercepted. Disables proxy if no more pending.
+        Called by mitmproxy callback when dofus3.json is intercepted.
         """
         with self._lock:
-            if hash in self._pending_hashes:
-                del self._pending_hashes[hash]
-                remaining = len(self._pending_hashes)
+            if self._pending_count > 0:
+                self._pending_count -= 1
 
-                if remaining == 0:
-                    print("[PROXY] Last connection completed, disabling proxy")
+                if self._pending_count == 0:
+                    print("[PROXY] Dernier client connecté, désactivation proxy")
                     set_proxy(False)
                 else:
-                    print(f"[PROXY] Connection completed, {remaining} still pending")
+                    print(
+                        f"[PROXY] Config interceptée, {self._pending_count} en attente"
+                    )
 
     def get_pending_count(self) -> int:
         """Return the current number of pending connections."""
         with self._lock:
-            return len(self._pending_hashes)
+            return self._pending_count
 
 
-_tracker: Optional[PendingConnectionTracker] = None
+_tracker: PendingConnectionTracker | None = None
 _tracker_lock = threading.Lock()
 
 
-def get_tracker(timeout_seconds: Optional[float] = 120.0) -> PendingConnectionTracker:
+def get_tracker() -> PendingConnectionTracker:
     """
     Get or create the global PendingConnectionTracker singleton.
     """
     global _tracker
     with _tracker_lock:
         if _tracker is None:
-            _tracker = PendingConnectionTracker(timeout_seconds=timeout_seconds)
-            _tracker.start_cleanup_thread()
+            _tracker = PendingConnectionTracker()
         return _tracker

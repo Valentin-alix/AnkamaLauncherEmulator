@@ -1,11 +1,9 @@
 import json
 from dataclasses import dataclass, field
-from threading import Timer
 
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
 from ankama_launcher_emulator.internet_utils import retry_internet
-from ankama_launcher_emulator.server.pending_tracker import get_tracker
 
 
 @dataclass
@@ -13,7 +11,6 @@ class AnkamaLauncherHandler:
     infos_by_hash: dict[str, AccountGameInfo] = field(
         init=False, default_factory=lambda: {}
     )
-    _timers: list[Timer] = field(init=False, default_factory=list)
 
     @retry_internet
     def connect(
@@ -71,15 +68,10 @@ class AnkamaLauncherHandler:
 
     @retry_internet
     def auth_getGameToken(self, hash: str, gameId: int) -> str:
-        tracker = get_tracker()
-        timer = Timer(15, lambda: tracker.register_connection(hash))
-        self._timers.append(timer)
-        timer.start()
         certificate_datas = CryptoHelper.getStoredCertificate(
             self.infos_by_hash[hash].login
         )["certificate"]
-        res = self.infos_by_hash[hash].haapi.createToken(gameId, certificate_datas)
-        return res
+        return self.infos_by_hash[hash].haapi.createToken(gameId, certificate_datas)
 
     @retry_internet
     def updater_isUpdateAvailable(self, gameSession: str):

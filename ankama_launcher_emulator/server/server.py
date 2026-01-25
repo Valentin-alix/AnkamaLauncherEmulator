@@ -15,6 +15,7 @@ from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
 from ankama_launcher_emulator.server.pending_tracker import get_tracker
+from ankama_launcher_emulator.redirect import run_proxy_config_in_thread
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from ankama_launcher_emulator.consts import DOFUS_PATH, OFFICIAL_CONFIG_URL
@@ -38,6 +39,11 @@ class AnkamaLauncherServer:
 
     def start(self, source_ip: str | None = None):
         self._source_ip = source_ip
+
+        # Démarrer le proxy mitmproxy avec callback vers le tracker
+        tracker = get_tracker()
+        run_proxy_config_in_thread(on_config_intercepted=tracker.register_connection)
+
         for proc in process_iter():
             if proc.pid == 0:
                 continue
@@ -66,7 +72,7 @@ class AnkamaLauncherServer:
         pid = self._launch_dofus_exe(random_hash, config_url)
 
         tracker = get_tracker()
-        tracker.register_launch(random_hash)
+        tracker.register_launch()
 
         return pid
 
@@ -130,6 +136,8 @@ def main():
     handler = AnkamaLauncherHandler()
     server = AnkamaLauncherServer(handler)
     server.start()
+
+    server.launch_dofus("pcserv_blibli_2_0@outlook.fr")
 
     while True:
         sleep(1)
