@@ -42,7 +42,7 @@ class PendingConnectionTracker:
 
                 if self._pending_count == 0:
                     print("[PROXY] Dernier client connecté, désactivation proxy")
-                    set_proxy(False)
+                    # set_proxy(False)
                 else:
                     print(
                         f"[PROXY] Config interceptée, {self._pending_count} en attente"
