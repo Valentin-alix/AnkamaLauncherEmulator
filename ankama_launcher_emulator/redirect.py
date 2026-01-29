@@ -11,11 +11,7 @@ from mitmproxy.tools.dump import DumpMaster
 from ankama_launcher_emulator.consts import BASE_CONFIG_URL
 
 
-def set_proxy(
-    enable=True,
-    proxy="127.0.0.1:8080",
-    exceptions="https://api.openai.com",
-):
+def set_proxy(enable=True, proxy="127.0.0.1:8080", exceptions: str | None = None):
     """
     Configure le proxy Windows pour l'utilisateur courant.
     enable : True pour activer, False pour désactiver
@@ -29,7 +25,8 @@ def set_proxy(
         winreg.SetValueEx(key, "ProxyEnable", 0, winreg.REG_DWORD, 1 if enable else 0)
         if enable:
             winreg.SetValueEx(key, "ProxyServer", 0, winreg.REG_SZ, proxy)
-            winreg.SetValueEx(key, "ProxyOverride", 0, winreg.REG_SZ, exceptions)
+            if exceptions:
+                winreg.SetValueEx(key, "ProxyOverride", 0, winreg.REG_SZ, exceptions)
     print(f"[PROXY] {'activé' if enable else 'désactivé'}")
 
 

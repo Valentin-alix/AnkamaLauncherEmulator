@@ -14,10 +14,11 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
-from ankama_launcher_emulator.server.pending_tracker import get_tracker
 from ankama_launcher_emulator.redirect import run_proxy_config_in_thread
+from ankama_launcher_emulator.server.pending_tracker import get_tracker
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
+
 from ankama_launcher_emulator.consts import DOFUS_PATH, OFFICIAL_CONFIG_URL
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.gen_zaap.zaap import ZaapService
@@ -36,13 +37,25 @@ class AnkamaLauncherServer:
     _server_thread: Thread | None = None
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
     _source_ip: str | None = field(init=False, default=None)
+    _do_intercept_to_localhost: bool = field(init=False, default=False)
 
-    def start(self, source_ip: str | None = None):
+    def start(
+        self, source_ip: str | None = None, do_intercept_to_localhost: bool = False
+    ):
+        """start the ankama launcher emulator
+
+        Args:
+            source_ip (str | None, optional): the local ip, useful to bind to a specific network interface. Defaults to None.
+            do_intercept_to_localhost (bool, optional): we intercept the config for dofus3 to put a local server instead of the real server, useful for mitm bot. Defaults to False.
+        """
+        self._do_intercept_to_localhost = do_intercept_to_localhost
         self._source_ip = source_ip
 
-        # Démarrer le proxy mitmproxy avec callback vers le tracker
         tracker = get_tracker()
-        run_proxy_config_in_thread(on_config_intercepted=tracker.register_connection)
+        if do_intercept_to_localhost:
+            run_proxy_config_in_thread(
+                on_config_intercepted=tracker.register_connection
+            )
 
         for proc in process_iter():
             if proc.pid == 0:
@@ -50,6 +63,7 @@ class AnkamaLauncherServer:
             for conns in proc.net_connections(kind="inet"):
                 if conns.laddr.port == LAUNCHER_PORT:
                     proc.send_signal(SIGTERM)
+
         processor = ZaapService.Processor(self.handler)
         transport = TSocket.TServerSocket(host="0.0.0.0", port=LAUNCHER_PORT)
         tfactory = TTransport.TBufferedTransportFactory()
@@ -62,6 +76,7 @@ class AnkamaLauncherServer:
         self.instance_id += 1
 
         api_key = CryptoHelper.getStoredApiKey(login)["apikey"]["key"]
+
         self.handler.infos_by_hash[random_hash] = AccountGameInfo(
             login=login,
             game_id=102,
@@ -71,8 +86,9 @@ class AnkamaLauncherServer:
 
         pid = self._launch_dofus_exe(random_hash, config_url)
 
-        tracker = get_tracker()
-        tracker.register_launch()
+        if self._do_intercept_to_localhost:
+            tracker = get_tracker()
+            tracker.register_launch()
 
         return pid
 
@@ -107,8 +123,6 @@ class AnkamaLauncherServer:
             "2",
             "--connectionPort",
             "5555",
-            "--configUrl",
-            config_url,
         ]
         env = {
             "ZAAP_CAN_AUTH": "true",
@@ -144,6 +158,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # [NETWORK] Error: HTTPSConnectionPool(host='haapi.ankama.com', port=443): Max retries exceeded with url: /json/Ankama/v5/Account/SignOnWithApiKey (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)'))). Retrying
-    # ./Ankama\ Launcher.exe --inspect --remote-debugging-port=8315
     main()

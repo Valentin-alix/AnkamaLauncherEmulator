@@ -1,26 +1,8 @@
-import sys
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 import requests
 from requests.adapters import HTTPAdapter
-
-from ankama_launcher_emulator.internet_utils import retry_internet
-
-
-class InterfaceAdapter(HTTPAdapter):
-    """Adapter to bind requests to a specific network interface."""
-
-    def __init__(self, source_ip: str, **kwargs):
-        self.source_ip = source_ip
-        super().__init__(**kwargs)
-
-    def init_poolmanager(self, *args, **kwargs):
-        kwargs["source_address"] = (self.source_ip, 0)
-        super().init_poolmanager(*args, **kwargs)
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.haapi.urls import (
@@ -29,6 +11,17 @@ from ankama_launcher_emulator.haapi.urls import (
 )
 from ankama_launcher_emulator.haapi.zaap_version import ZAAP_VERSION
 from ankama_launcher_emulator.interfaces.deciphered_cert import DecipheredCertifDatas
+from ankama_launcher_emulator.internet_utils import retry_internet
+
+
+class InterfaceAdapter(HTTPAdapter):
+    def __init__(self, source_ip: str, **kwargs):
+        self.source_ip = source_ip
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs["source_address"] = (self.source_ip, 0)
+        super().init_poolmanager(*args, **kwargs)
 
 
 @dataclass
@@ -38,7 +31,6 @@ class Haapi:
 
     def __post_init__(self):
         self.zaap_session = requests.Session()
-        self.zaap_session.verify = str(Path.home() / ".mitmproxy/mitmproxy-ca.pem")
         if self.source_ip:
             adapter = InterfaceAdapter(self.source_ip)
             self.zaap_session.mount("https://", adapter)
@@ -68,7 +60,6 @@ class Haapi:
     @retry_internet
     def createToken(self, game_id: int, certif: DecipheredCertifDatas) -> str:
         # https://haapi.ankama.com/json/Ankama/v5/Account/CreateToken?game=1&certificate_id=407269037&certificate_hash=4c4ab1b3684623f7
-        """create gameToken based on parameters"""
         url = ANKAMA_ACCOUNT_CREATE_TOKEN
         params = {
             "game": game_id,

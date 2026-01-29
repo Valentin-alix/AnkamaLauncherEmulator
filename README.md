@@ -1,17 +1,25 @@
 # Ankama Launcher Emulator
 
-## Code Generation
+## Requirements
 
-To generate code from `zaap.thrift`:
-```bash
-thrift --gen py resources/zaap.thrift && mv gen-py src/gen_zaap
-```
+- python >= 3.12
+- uv (https://github.com/astral-sh/uv)
+    `pip install uv`
+- Install dependencies
+    `uv sync`
 
 ## Running an Account
 
 Go to `src/server/server.py`, modify the login, then run:
 ```bash
 python src/server/server.py
+```
+
+## Code Generation
+
+To generate code from `zaap.thrift`:
+```bash
+thrift --gen py resources/zaap.thrift && mv gen-py src/gen_zaap
 ```
 
 ## Installation
