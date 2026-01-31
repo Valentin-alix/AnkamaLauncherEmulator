@@ -1,7 +1,10 @@
+import logging
 import socket
 from time import sleep
 
 import requests
+
+logger = logging.getLogger()
 
 
 def retry_internet(func):
@@ -15,7 +18,7 @@ def retry_internet(func):
                 requests.exceptions.Timeout,
                 socket.gaierror,
             ) as err:
-                print(f"[NETWORK] Error: {err}. Retrying…")
+                logger.info(f"[NETWORK] Error: {err}. Retrying…")
                 ensure_internet()
             try_count -= 1
             sleep(10)
@@ -25,7 +28,7 @@ def retry_internet(func):
 
 def ensure_internet(wait=1):
     while not has_internet_connection():
-        print("[WARN] No internet, waiting...")
+        logger.info("[WARN] No internet, waiting...")
         sleep(wait)
 
 

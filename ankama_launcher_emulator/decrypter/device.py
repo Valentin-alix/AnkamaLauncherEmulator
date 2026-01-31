@@ -56,7 +56,9 @@ class Device:
             "win32": (
                 os.path.join(
                     "%windir%",
-                    "sysnative" if arch == "32bit" and "PROCESSOR_ARCHITEW6432" in os.environ else "System32",
+                    "sysnative"
+                    if arch == "32bit" and "PROCESSOR_ARCHITEW6432" in os.environ
+                    else "System32",
                 )
                 + "\\REG.exe QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography /v MachineGuid"
             ),
@@ -70,7 +72,9 @@ class Device:
     def parseMachineGuuid(plt: str, std_out: str) -> str:
         match plt:
             case "darwin":
-                return re.sub(r'=|\s+|"', "", std_out.split("IOPlatformUUID")[1].split("\n")[0]).lower()
+                return re.sub(
+                    r'=|\s+|"', "", std_out.split("IOPlatformUUID")[1].split("\n")[0]
+                ).lower()
             case "win32":
                 return re.sub(r"\r+|\n+|\s+", "", std_out.split("REG_SZ")[1]).lower()
             case "linux" | "freebsd":
@@ -127,7 +131,3 @@ class Device:
         major_version = version_splitted[0]
         medium_version = version_splitted[1]
         return float(f"{major_version}.{medium_version}")
-
-
-if __name__ == "__main__":
-    print(Device.getUUID())

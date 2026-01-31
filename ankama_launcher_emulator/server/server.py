@@ -18,7 +18,7 @@ from AnkamaLauncherEmulator.ankama_launcher_emulator.redirect import (
     run_proxy_config_in_thread,
 )
 from AnkamaLauncherEmulator.ankama_launcher_emulator.server.pending_tracker import (
-    get_tracker,
+    PendingConnectionTracker,
 )
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -66,10 +66,9 @@ class AnkamaLauncherServer:
         self._do_intercept_to_localhost = do_intercept_to_localhost
         self._source_ip = source_ip
 
-        tracker = get_tracker()
         if do_intercept_to_localhost:
             run_proxy_config_in_thread(
-                on_config_intercepted=tracker.register_connection
+                on_config_intercepted=PendingConnectionTracker().register_connection
             )
 
         for proc in process_iter():
@@ -102,8 +101,7 @@ class AnkamaLauncherServer:
         pid = self._launch_dofus_exe(random_hash, config_url)
 
         if self._do_intercept_to_localhost:
-            tracker = get_tracker()
-            tracker.register_launch()
+            PendingConnectionTracker().register_launch()
 
         return pid
 

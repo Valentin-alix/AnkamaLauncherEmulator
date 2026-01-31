@@ -168,4 +168,3 @@ if __name__ == "__main__":
         },
     }
     yolo = CryptoHelper.encrypt(temp, Device.getUUID())
-    print(yolo)

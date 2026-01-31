@@ -78,9 +78,3 @@ class Haapi:
         response.raise_for_status()
         body = response.json()
         return body["token"]
-
-
-if __name__ == "__main__":
-    haapi = Haapi("b863b45d-3941-42ca-bffd-9e22db98f36c")
-    res = haapi.signOnWithApiKey(102)
-    print(res)

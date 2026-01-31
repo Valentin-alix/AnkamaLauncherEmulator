@@ -1,6 +1,7 @@
 import asyncio
 import atexit
 import json
+import logging
 import threading
 import winreg
 from collections.abc import Callable
@@ -12,6 +13,8 @@ from mitmproxy.tools.dump import DumpMaster
 from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import BASE_CONFIG_URL
 
 PROXY_EXCEPTIONS = "haapi.ankama.com"
+
+logger = logging.getLogger()
 
 
 atexit.register(lambda: set_proxy(False))
@@ -36,7 +39,7 @@ def set_proxy(
         if enable:
             winreg.SetValueEx(key, "ProxyServer", 0, winreg.REG_SZ, proxy)
             winreg.SetValueEx(key, "ProxyOverride", 0, winreg.REG_SZ, exceptions)
-    print(f"[PROXY] {'activé' if enable else 'désactivé'}")
+    logger.info(f"[PROXY] {'activé' if enable else 'désactivé'}")
 
 
 @dataclass
@@ -53,7 +56,7 @@ class ChangeDofusConfig:
             datas = json.loads(flow.response.content)
             datas["connectionHosts"] = ["JMBouftou:localhost:5555"]
             flow.response.content = json.dumps(datas).encode()
-            print("[PROXY] Config interceptée et modifiée")
+            logger.info("[PROXY] Config interceptée et modifiée")
             if self.on_config_intercepted:
                 self.on_config_intercepted()
 
@@ -69,7 +72,7 @@ async def start_proxy_dofus_config(
     dump_master.addons.add(addon)
 
     try:
-        print("[PROXY] Running MITM HTTP")
+        logger.info("[PROXY] Running MITM HTTP")
         await dump_master.run()
     except KeyboardInterrupt:
         dump_master.shutdown()
