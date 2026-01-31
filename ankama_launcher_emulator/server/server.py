@@ -14,18 +14,33 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
-from ankama_launcher_emulator.redirect import run_proxy_config_in_thread
-from ankama_launcher_emulator.server.pending_tracker import get_tracker
+from AnkamaLauncherEmulator.ankama_launcher_emulator.redirect import (
+    run_proxy_config_in_thread,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.server.pending_tracker import (
+    get_tracker,
+)
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from ankama_launcher_emulator.consts import DOFUS_PATH, OFFICIAL_CONFIG_URL
-from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
-from ankama_launcher_emulator.gen_zaap.zaap import ZaapService
-from ankama_launcher_emulator.haapi.haapi import Haapi
-from ankama_launcher_emulator.interfaces.account_game_info import AccountGameInfo
-from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
-from ankama_launcher_emulator.server.handler import AnkamaLauncherHandler
+from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import (
+    DOFUS_PATH,
+    OFFICIAL_CONFIG_URL,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
+    CryptoHelper,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.gen_zaap.zaap import ZaapService
+from AnkamaLauncherEmulator.ankama_launcher_emulator.haapi.haapi import Haapi
+from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.account_game_info import (
+    AccountGameInfo,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.game_name_enum import (
+    GameNameEnum,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.server.handler import (
+    AnkamaLauncherHandler,
+)
 
 LAUNCHER_PORT = 26116
 

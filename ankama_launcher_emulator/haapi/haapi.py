@@ -4,14 +4,22 @@ from typing import Any
 import requests
 from requests.adapters import HTTPAdapter
 
-from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
-from ankama_launcher_emulator.haapi.urls import (
+from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
+    CryptoHelper,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.haapi.urls import (
     ANKAMA_ACCOUNT_CREATE_TOKEN,
     ANKAMA_ACCOUNT_SIGN_ON_WITH_API_KEY,
 )
-from ankama_launcher_emulator.haapi.zaap_version import ZAAP_VERSION
-from ankama_launcher_emulator.interfaces.deciphered_cert import DecipheredCertifDatas
-from ankama_launcher_emulator.internet_utils import retry_internet
+from AnkamaLauncherEmulator.ankama_launcher_emulator.haapi.zaap_version import (
+    ZAAP_VERSION,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.deciphered_cert import (
+    DecipheredCertifDatas,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.internet_utils import (
+    retry_internet,
+)
 
 
 class InterfaceAdapter(HTTPAdapter):

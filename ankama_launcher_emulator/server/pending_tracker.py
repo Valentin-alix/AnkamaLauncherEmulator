@@ -1,7 +1,7 @@
 import threading
 from dataclasses import dataclass, field
 
-from ankama_launcher_emulator.redirect import set_proxy
+from AnkamaLauncherEmulator.ankama_launcher_emulator.redirect import set_proxy
 
 
 @dataclass
@@ -34,9 +34,8 @@ class PendingConnectionTracker:
                 self._pending_count -= 1
                 print(f"[PROXY] Config interceptée, {self._pending_count} en attente")
                 if self._pending_count == 0:
-                    ...
-                    # print("[PROXY] Dernier client connecté, désactivation proxy")
-                    # set_proxy(False) # comment it bc it's flakky
+                    print("[PROXY] Dernier client connecté, désactivation proxy")
+                    set_proxy(False)
 
     def get_pending_count(self) -> int:
         with self._lock:
@@ -53,13 +52,3 @@ def get_tracker() -> PendingConnectionTracker:
         if _tracker is None:
             _tracker = PendingConnectionTracker()
         return _tracker
-
-
-def register_connection_after_func(func):
-    def wrapper(*args, **kwargs):
-        res = func(*args, **kwargs)
-        tracker = get_tracker()
-        tracker.register_connection()
-        return res
-
-    return wrapper

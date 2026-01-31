@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 import json
 import threading
 import winreg
@@ -8,10 +9,19 @@ from dataclasses import dataclass, field
 from mitmproxy import http, options
 from mitmproxy.tools.dump import DumpMaster
 
-from ankama_launcher_emulator.consts import BASE_CONFIG_URL
+from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import BASE_CONFIG_URL
+
+PROXY_EXCEPTIONS = "haapi.ankama.com"
 
 
-def set_proxy(enable=True, proxy="127.0.0.1:8080", exceptions: str | None = None):
+atexit.register(lambda: set_proxy(False))
+
+
+def set_proxy(
+    enable: bool = True,
+    proxy: str = "127.0.0.1:8080",
+    exceptions: str = PROXY_EXCEPTIONS,
+):
     """
     Configure le proxy Windows pour l'utilisateur courant.
     enable : True pour activer, False pour désactiver
@@ -25,8 +35,7 @@ def set_proxy(enable=True, proxy="127.0.0.1:8080", exceptions: str | None = None
         winreg.SetValueEx(key, "ProxyEnable", 0, winreg.REG_DWORD, 1 if enable else 0)
         if enable:
             winreg.SetValueEx(key, "ProxyServer", 0, winreg.REG_SZ, proxy)
-            if exceptions:
-                winreg.SetValueEx(key, "ProxyOverride", 0, winreg.REG_SZ, exceptions)
+            winreg.SetValueEx(key, "ProxyOverride", 0, winreg.REG_SZ, exceptions)
     print(f"[PROXY] {'activé' if enable else 'désactivé'}")
 
 
@@ -45,6 +54,8 @@ class ChangeDofusConfig:
             datas["connectionHosts"] = ["JMBouftou:localhost:5555"]
             flow.response.content = json.dumps(datas).encode()
             print("[PROXY] Config interceptée et modifiée")
+            if self.on_config_intercepted:
+                self.on_config_intercepted()
 
 
 async def start_proxy_dofus_config(

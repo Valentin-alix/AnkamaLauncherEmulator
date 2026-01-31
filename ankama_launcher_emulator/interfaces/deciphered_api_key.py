@@ -1,6 +1,8 @@
 from typing import TypedDict
 
-from ankama_launcher_emulator.interfaces.deciphered_cert import DecipheredCertifDatas
+from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.deciphered_cert import (
+    DecipheredCertifDatas,
+)
 
 
 class DecipheredApiKeyDatas(TypedDict):
