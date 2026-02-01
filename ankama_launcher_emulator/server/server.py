@@ -25,7 +25,6 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import (
     DOFUS_PATH,
-    OFFICIAL_CONFIG_URL,
 )
 from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
@@ -85,7 +84,7 @@ class AnkamaLauncherServer:
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
         Thread(target=server.serve, daemon=True).start()
 
-    def launch_dofus(self, login: str, config_url: str = OFFICIAL_CONFIG_URL) -> int:
+    def launch_dofus(self, login: str) -> int:
         random_hash = str(uuid.uuid4())
         self.instance_id += 1
 
@@ -98,14 +97,14 @@ class AnkamaLauncherServer:
             haapi=Haapi(api_key, source_ip=self._source_ip),
         )
 
-        pid = self._launch_dofus_exe(random_hash, config_url)
+        pid = self._launch_dofus_exe(random_hash)
 
         if self._do_intercept_to_localhost:
             PendingConnectionTracker().register_launch()
 
         return pid
 
-    def _launch_dofus_exe(self, random_hash: str, config_url: str) -> int:
+    def _launch_dofus_exe(self, random_hash: str) -> int:
         log_path = os.path.join(
             os.environ["LOCALAPPDATA"],
             "Roaming",
