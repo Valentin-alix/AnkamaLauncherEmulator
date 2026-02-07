@@ -94,7 +94,7 @@ class AnkamaLauncherServer:
             login=login,
             game_id=102,
             api_key=api_key,
-            haapi=Haapi(api_key, source_ip=self._source_ip),
+            haapi=Haapi(api_key, source_ip=self._source_ip, login=login),
         )
 
         pid = self._launch_dofus_exe(random_hash)

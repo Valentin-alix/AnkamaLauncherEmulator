@@ -1,9 +1,13 @@
 import json
+import logging
 from dataclasses import dataclass, field
 from threading import Timer
 
 from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
+)
+from AnkamaLauncherEmulator.ankama_launcher_emulator.haapi.haapi import (
+    get_account_info_by_login,
 )
 from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.account_game_info import (
     AccountGameInfo,
@@ -11,6 +15,8 @@ from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.account_game_inf
 from AnkamaLauncherEmulator.ankama_launcher_emulator.internet_utils import (
     retry_internet,
 )
+
+logger = logging.getLogger()
 
 
 @dataclass
@@ -28,10 +34,15 @@ class AnkamaLauncherHandler:
 
     @retry_internet
     def userInfo_get(self, hash: str) -> str:
+        account_info = get_account_info_by_login(self.infos_by_hash[hash].haapi.login)
+        if account_info is not None:
+            return json.dumps(account_info)
+        logger.warning(
+            "<!> Account info not found in settings, fetching account info..."
+        )
         user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
             int(self.infos_by_hash[hash].game_id)
         )
-        # sent_from_official_launcher = isoparse(user_infos["game"]["added_date"])
         expected = {
             "id": user_infos["account"],
             "type": "ANKAMA",

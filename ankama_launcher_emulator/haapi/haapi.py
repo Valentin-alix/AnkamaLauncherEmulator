@@ -1,9 +1,12 @@
+import json
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 import requests
 from requests.adapters import HTTPAdapter
 
+from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import SETTINGS_PATH
 from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
 )
@@ -32,9 +35,22 @@ class InterfaceAdapter(HTTPAdapter):
         super().init_poolmanager(*args, **kwargs)
 
 
+def get_account_info_by_login(login: str):
+    with open(SETTINGS_PATH, "r") as file:
+        content = json.load(file)
+    account = next(
+        (acc for acc in content["USER_ACCOUNTS"] if acc["login"] == login), None
+    )
+    return account
+
+
+logger = logging.getLogger()
+
+
 @dataclass
 class Haapi:
     api_key: str
+    login: str
     source_ip: str | None = None
 
     def __post_init__(self):
