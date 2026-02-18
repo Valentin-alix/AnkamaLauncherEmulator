@@ -51,10 +51,16 @@ logger = logging.getLogger()
 class Haapi:
     api_key: str
     login: str
-    source_ip: str | None = None
+    source_ip: str | None
+    proxy_url: str | None
 
     def __post_init__(self):
         self.zaap_session = requests.Session()
+        if self.proxy_url:
+            self.zaap_session.proxies = {
+                "http": self.proxy_url,
+                "https": self.proxy_url,
+            }
         if self.source_ip:
             adapter = InterfaceAdapter(self.source_ip)
             self.zaap_session.mount("https://", adapter)

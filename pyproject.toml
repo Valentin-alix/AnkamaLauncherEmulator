@@ -18,6 +18,8 @@ dependencies = [
     "frida>=16.6.5,<17",
     "python-dateutil>=2.9.0.post0,<3",
     "mitmproxy>=12.2.1",
+    "pysocks>=1.7.1",
+    "protobuf==5.28.3",
 ]
 
 [dependency-groups]
