@@ -57,31 +57,11 @@ class AnkamaLauncherServer:
     instance_id: int = field(init=False, default=0)
     _server_thread: Thread | None = None
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
-    _source_ip: str | None = field(init=False, default=None)
-    _proxy_url: str | None = field(init=False, default=None)
-    _proxy_listener: ProxyListener | None = field(init=False, default=None)
 
-    def start(
-        self,
-        source_ip: str | None = None,
-        proxy_listener: ProxyListener | None = None,
-        proxy_url: str | None = None,
-    ):
-        """start the ankama launcher emulator
-
-        Args:
-            source_ip (str | None, optional): the local ip, useful to bind to a specific network interface. Defaults to None.
-            proxy_url (str | None, optional): HTTP proxy URL (format: http://user:pass@host:port). Defaults to None.
-        """
-        self._source_ip = source_ip
-        self._proxy_url = proxy_url
-        self._proxy_listener = proxy_listener
-
-        if self._proxy_listener:
-            self._proxy_listener.start(interface_ip=source_ip)
-            run_proxy_config_in_thread(
-                on_config_intercepted=PendingConnectionTracker().register_connection
-            )
+    def start(self):
+        run_proxy_config_in_thread(
+            get_next_port=PendingConnectionTracker().pop_next_port
+        )
 
         for proc in process_iter():
             if proc.pid == 0:
@@ -97,7 +77,13 @@ class AnkamaLauncherServer:
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
         Thread(target=server.serve, daemon=True).start()
 
-    def launch_dofus(self, login: str) -> int:
+    def launch_dofus(
+        self,
+        login: str,
+        proxy_listener: ProxyListener | None = None,
+        proxy_url: str | None = None,
+        source_ip: str | None = None,
+    ) -> int:
         random_hash = str(uuid.uuid4())
         self.instance_id += 1
 
@@ -107,22 +93,19 @@ class AnkamaLauncherServer:
             login=login,
             game_id=102,
             api_key=api_key,
-            haapi=Haapi(
-                api_key,
-                source_ip=self._source_ip,
-                login=login,
-                proxy_url=self._proxy_url,
-            ),
+            haapi=Haapi(api_key, source_ip=source_ip, login=login, proxy_url=proxy_url),
         )
 
-        pid = self._launch_dofus_exe(random_hash)
+        connection_port: int | None = None
+        if proxy_listener is not None:
+            connection_port = proxy_listener.start(port=0, interface_ip=source_ip)
 
-        if self._proxy_listener:
-            PendingConnectionTracker().register_launch()
+        PendingConnectionTracker().register_launch(port=connection_port)
+        return self._launch_dofus_exe(random_hash, connection_port=connection_port)
 
-        return pid
-
-    def _launch_dofus_exe(self, random_hash: str) -> int:
+    def _launch_dofus_exe(
+        self, random_hash: str, connection_port: int | None = None
+    ) -> int:
         log_path = os.path.join(
             os.environ["LOCALAPPDATA"],
             "Roaming",
@@ -151,9 +134,10 @@ class AnkamaLauncherServer:
             "fr",
             "--autoConnectType",
             "2",
-            "--connectionPort",
-            "5555",
         ]
+        if connection_port is not None:
+            command += ["--connectionPort", str(connection_port)]
+
         env = {
             "ZAAP_CAN_AUTH": "true",
             "ZAAP_GAME": GameNameEnum.DOFUS.value,
@@ -179,18 +163,19 @@ class AnkamaLauncherServer:
 def main():
     handler = AnkamaLauncherHandler()
     server = AnkamaLauncherServer(handler)
+    server.start()
+
     proxy_listener = ProxyListener(
         socks5_host=SOCKS5_HOST,
         socks5_port=SOCKS5_PORT,
         socks5_username=SOCKS5_USERNAME,
         socks5_password=SOCKS5_PASSWORD,
     )
-    server.start(
+    server.launch_dofus(
+        "pcserv_blibli_12_2@outlook.fr",
         proxy_listener=proxy_listener,
         proxy_url="http://090de9c7b643e2e1:x0JriSUK@185.162.130.85:10000",
     )
-
-    server.launch_dofus("pcserv_blibli_12_2@outlook.fr")
 
     while True:
         sleep(1)

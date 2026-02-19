@@ -29,11 +29,12 @@ class ProxyListener:
     proxies: list[Proxy] = field(default_factory=list, init=False)
     _listener_sockets: list[Socket] = field(default_factory=list, init=False)
     _shutdown_requested: bool = field(default=False, init=False)
+    _initial_port: int | None = field(default=None, init=False)
 
     def create_bridge(
         self, client_socket: Socket, server_socket: Socket, host_port: int
     ) -> Proxy | None:
-        if host_port == DOFUS_CONNECTION_PORT:
+        if host_port == self._initial_port:
             return ConnectionProxy(
                 on_game_connection_callback=lambda target_address: self.start_game_listener(
                     target_address
@@ -58,19 +59,23 @@ class ProxyListener:
 
     def start(
         self,
+        port: int = DOFUS_CONNECTION_PORT,
         target_address: tuple[str, int] = (
             DOFUS_CONNECTION_HOST,
             DOFUS_CONNECTION_PORT,
         ),
         interface_ip: str | None = None,
-    ) -> None:
-        proxy_socket = self.create_server(DOFUS_CONNECTION_PORT)
+    ) -> int:
+        proxy_socket = self.create_server(port)
+        bound_port = proxy_socket.getsockname()[1]
+        self._initial_port = bound_port
         Thread(
             target=lambda: self.start_listener(
                 proxy_socket, target_address, forever=True, interface_ip=interface_ip
             ),
             daemon=True,
         ).start()
+        return bound_port
 
     def start_listener(
         self,
