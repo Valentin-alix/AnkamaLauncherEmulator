@@ -28,6 +28,10 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import (
     DOFUS_PATH,
+    SOCKS5_HOST,
+    SOCKS5_PASSWORD,
+    SOCKS5_PORT,
+    SOCKS5_USERNAME,
 )
 from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
@@ -175,7 +179,16 @@ class AnkamaLauncherServer:
 def main():
     handler = AnkamaLauncherHandler()
     server = AnkamaLauncherServer(handler)
-    server.start()
+    proxy_listener = ProxyListener(
+        socks5_host=SOCKS5_HOST,
+        socks5_port=SOCKS5_PORT,
+        socks5_username=SOCKS5_USERNAME,
+        socks5_password=SOCKS5_PASSWORD,
+    )
+    server.start(
+        proxy_listener=proxy_listener,
+        proxy_url="http://090de9c7b643e2e1:x0JriSUK@185.162.130.85:10000",
+    )
 
     server.launch_dofus("pcserv_blibli_12_2@outlook.fr")
 
