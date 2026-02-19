@@ -8,7 +8,6 @@ from signal import SIGTERM
 from threading import Thread
 from time import sleep
 from typing import Any
-from urllib.parse import urlparse
 
 from psutil import process_iter
 from thrift.protocol import TBinaryProtocol
@@ -56,40 +55,25 @@ class AnkamaLauncherServer:
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
     _source_ip: str | None = field(init=False, default=None)
     _proxy_url: str | None = field(init=False, default=None)
-    _do_intercept_to_localhost: bool = field(init=False, default=False)
     _proxy_listener: ProxyListener | None = field(init=False, default=None)
 
     def start(
         self,
         source_ip: str | None = None,
-        do_intercept_to_localhost: bool = False,
+        proxy_listener: ProxyListener | None = None,
         proxy_url: str | None = None,
-        socks5_proxy_url: str | None = None,
     ):
         """start the ankama launcher emulator
 
         Args:
             source_ip (str | None, optional): the local ip, useful to bind to a specific network interface. Defaults to None.
-            do_intercept_to_localhost (bool, optional): we intercept the config for dofus3 to put a local server instead of the real server, useful for mitm bot. Defaults to False.
             proxy_url (str | None, optional): HTTP proxy URL (format: http://user:pass@host:port). Defaults to None.
-            socks5_proxy_url (str | None, optional): SOCKS5 proxy URL for game TCP connections (format: socks5://user:pass@host:port). Defaults to None.
         """
-        self._do_intercept_to_localhost = do_intercept_to_localhost
         self._source_ip = source_ip
         self._proxy_url = proxy_url
+        self._proxy_listener = proxy_listener
 
-        if do_intercept_to_localhost:
-            if socks5_proxy_url is None:
-                self._proxy_listener = ProxyListener()
-            else:
-                parsed = urlparse(socks5_proxy_url)
-                self._proxy_listener = ProxyListener(
-                    socks5_host=parsed.hostname,
-                    socks5_port=parsed.port,
-                    socks5_username=parsed.username,
-                    socks5_password=parsed.password,
-                )
-
+        if self._proxy_listener:
             self._proxy_listener.start(interface_ip=source_ip)
             run_proxy_config_in_thread(
                 on_config_intercepted=PendingConnectionTracker().register_connection
@@ -129,7 +113,7 @@ class AnkamaLauncherServer:
 
         pid = self._launch_dofus_exe(random_hash)
 
-        if self._do_intercept_to_localhost:
+        if self._proxy_listener:
             PendingConnectionTracker().register_launch()
 
         return pid
@@ -191,7 +175,7 @@ class AnkamaLauncherServer:
 def main():
     handler = AnkamaLauncherHandler()
     server = AnkamaLauncherServer(handler)
-    server.start(do_intercept_to_localhost=True)
+    server.start()
 
     server.launch_dofus("pcserv_blibli_12_2@outlook.fr")
 
