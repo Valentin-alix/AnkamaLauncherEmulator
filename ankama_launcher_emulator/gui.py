@@ -1,5 +1,7 @@
+from types import SimpleNamespace
 from urllib.parse import urlparse
 
+import psutil
 from nicegui import ui
 
 from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
@@ -52,8 +54,14 @@ def run_gui() -> None:
     all_interface = {"Empty": None} | interfaces
     all_interface = {value: key for key, value in all_interface.items()}
 
+    launched_pids: dict[str, int] = {}
+    states: dict[str, SimpleNamespace] = {
+        account["apikey"]["login"]: SimpleNamespace(running=False)
+        for account in accounts
+    }
+
     @ui.page("/")
-    def index():
+    def index():  # pyright: ignore[reportUnusedFunction]
         ui.label("Ankama Launcher").classes("text-2xl font-bold mb-4")
 
         if not accounts:
@@ -78,29 +86,39 @@ def run_gui() -> None:
                         validation={"Proxy URL not valid": _validation_proxy_url},
                     ).classes("w-128")
 
-                    def make_launch_handler(
-                        _login: str,
-                        _ip_select: ui.select,
-                        _proxy_input: ui.input,
+                    def on_launch(
+                        _login: str = login,
+                        _ip_select: ui.select = ip_select,
+                        _proxy_input: ui.input = proxy_input,
+                        _state: SimpleNamespace = states[login],
                     ):
-                        def on_launch():
-                            source_ip: str | None = _ip_select.value or None
-                            raw_proxy = _proxy_input.value.strip() or None
-                            proxy_listener, proxy_url = _build_proxy_listener(raw_proxy)
-                            server.launch_dofus(
-                                _login,
-                                proxy_listener=proxy_listener,
-                                proxy_url=proxy_url,
-                                source_ip=source_ip,
-                            )
-                            ui.notify(f"Launched {_login}", type="positive")
+                        source_ip: str | None = _ip_select.value or None
+                        raw_proxy = _proxy_input.value.strip() or None
+                        proxy_listener, proxy_url = _build_proxy_listener(raw_proxy)
+                        pid = server.launch_dofus(
+                            _login,
+                            proxy_listener=proxy_listener,
+                            proxy_url=proxy_url,
+                            source_ip=source_ip,
+                        )
+                        launched_pids[_login] = pid
+                        _state.running = True
+                        ui.notify(f"Launched {_login}", type="positive")
 
-                        return on_launch
+                    btn = ui.button("Launch", on_click=on_launch).classes(
+                        "bg-blue-600 text-white"
+                    )
+                    btn.bind_enabled_from(
+                        states[login], "running", backward=lambda state: not state
+                    )
 
-                    ui.button(
-                        "Launch",
-                        on_click=make_launch_handler(login, ip_select, proxy_input),
-                    ).classes("bg-blue-600 text-white")
+        def check_processes():
+            for login, pid in list(launched_pids.items()):
+                if not psutil.pid_exists(pid):
+                    del launched_pids[login]
+                    states[login].running = False
+
+        ui.timer(2.0, check_processes)
 
     ui.run(title="Ankama Launcher", port=8081, reload=False, dark=True)
 

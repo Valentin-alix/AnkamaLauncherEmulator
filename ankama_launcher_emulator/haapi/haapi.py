@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from typing import Any
 
 import requests
+import urllib3
 from requests.adapters import HTTPAdapter
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import SETTINGS_PATH
 from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
