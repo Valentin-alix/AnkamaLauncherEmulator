@@ -8,7 +8,7 @@ from src.utils.metaclasses.singleton import Singleton
 
 logger = logging.getLogger()
 
-PENDING_TIMEOUT_SECONDS = 60
+PENDING_TIMEOUT_SECONDS = 120
 
 
 @dataclass

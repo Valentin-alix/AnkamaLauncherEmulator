@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from signal import SIGTERM
 from threading import Thread
-from time import sleep
 from typing import Any
 
 from psutil import process_iter
@@ -28,10 +27,6 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import (
     DOFUS_PATH,
-    SOCKS5_HOST,
-    SOCKS5_PASSWORD,
-    SOCKS5_PORT,
-    SOCKS5_USERNAME,
 )
 from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
@@ -80,7 +75,7 @@ class AnkamaLauncherServer:
     def launch_dofus(
         self,
         login: str,
-        proxy_listener: ProxyListener | None = None,
+        proxy_listener: ProxyListener,
         proxy_url: str | None = None,
         source_ip: str | None = None,
     ) -> int:
@@ -96,16 +91,12 @@ class AnkamaLauncherServer:
             haapi=Haapi(api_key, source_ip=source_ip, login=login, proxy_url=proxy_url),
         )
 
-        connection_port: int | None = None
-        if proxy_listener is not None:
-            connection_port = proxy_listener.start(port=0, interface_ip=source_ip)
+        connection_port = proxy_listener.start(port=0, interface_ip=source_ip)
 
         PendingConnectionTracker().register_launch(port=connection_port)
         return self._launch_dofus_exe(random_hash, connection_port=connection_port)
 
-    def _launch_dofus_exe(
-        self, random_hash: str, connection_port: int | None = None
-    ) -> int:
+    def _launch_dofus_exe(self, random_hash: str, connection_port: int) -> int:
         log_path = os.path.join(
             os.environ["LOCALAPPDATA"],
             "Roaming",
@@ -134,9 +125,9 @@ class AnkamaLauncherServer:
             "fr",
             "--autoConnectType",
             "2",
+            "--connectionPort",
+            str(connection_port),
         ]
-        if connection_port is not None:
-            command += ["--connectionPort", str(connection_port)]
 
         env = {
             "ZAAP_CAN_AUTH": "true",
@@ -161,24 +152,9 @@ class AnkamaLauncherServer:
 
 
 def main():
-    handler = AnkamaLauncherHandler()
-    server = AnkamaLauncherServer(handler)
-    server.start()
+    from AnkamaLauncherEmulator.ankama_launcher_emulator.gui import run_gui
 
-    proxy_listener = ProxyListener(
-        socks5_host=SOCKS5_HOST,
-        socks5_port=SOCKS5_PORT,
-        socks5_username=SOCKS5_USERNAME,
-        socks5_password=SOCKS5_PASSWORD,
-    )
-    server.launch_dofus(
-        "pcserv_blibli_12_2@outlook.fr",
-        proxy_listener=proxy_listener,
-        proxy_url="http://090de9c7b643e2e1:x0JriSUK@185.162.130.85:10000",
-    )
-
-    while True:
-        sleep(1)
+    run_gui()
 
 
 if __name__ == "__main__":

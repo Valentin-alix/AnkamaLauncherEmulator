@@ -20,6 +20,7 @@ dependencies = [
     "mitmproxy>=12.2.1",
     "pysocks>=1.7.1",
     "protobuf==5.28.3",
+    "nicegui>=2.0.0",
 ]
 
 [dependency-groups]
