@@ -102,7 +102,7 @@ def run_gui() -> None:
                         on_click=make_launch_handler(login, ip_select, proxy_input),
                     ).classes("bg-blue-600 text-white")
 
-    ui.run(title="Ankama Launcher", port=8081, reload=False)
+    ui.run(title="Ankama Launcher", port=8081, reload=False, dark=True)
 
 
 if __name__ in {"__main__", "__mp_main__"}:
