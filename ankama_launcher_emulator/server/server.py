@@ -142,9 +142,27 @@ class AnkamaLauncherServer:
 
         return self._launch_exe(command, env)
 
-    def _launch_retro_exe(
-        self, random_hash: str, config_url: str, proxy: str | None
+    def launch_retro(
+        self,
+        login: str,
+        proxy_url: str | None = None,
+        source_ip: str | None = None,
     ) -> int:
+        random_hash = str(uuid.uuid4())
+        self.instance_id += 1
+
+        api_key = CryptoHelper.getStoredApiKey(login)["apikey"]["key"]
+
+        self.handler.infos_by_hash[random_hash] = AccountGameInfo(
+            login=login,
+            game_id=101,
+            api_key=api_key,
+            haapi=Haapi(api_key, source_ip=source_ip, login=login, proxy_url=proxy_url),
+        )
+
+        return self._launch_retro_exe(random_hash)
+
+    def _launch_retro_exe(self, random_hash: str) -> int:
         log_path = os.path.join(
             os.environ["LOCALAPPDATA"],
             "Roaming",

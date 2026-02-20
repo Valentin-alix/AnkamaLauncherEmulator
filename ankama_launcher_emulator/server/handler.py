@@ -37,42 +37,7 @@ class AnkamaLauncherHandler:
         account_info = get_account_info_by_login(self.infos_by_hash[hash].haapi.login)
         if account_info is not None:
             return json.dumps(account_info)
-        logger.warning(
-            "<!> Account info not found in settings, fetching account info..."
-        )
-        user_infos = self.infos_by_hash[hash].haapi.signOnWithApiKey(
-            int(self.infos_by_hash[hash].game_id)
-        )
-        expected = {
-            "id": user_infos["account"],
-            "type": "ANKAMA",
-            "login": user_infos["account"]["login"],
-            "nickname": user_infos["account"]["nickname"],
-            "firstname": user_infos["account"]["firstname"],
-            "lastname": user_infos["account"]["lastname"],
-            "nicknameWithTag": f"{user_infos['account']['nickname']}#{user_infos['account']['tag']}",
-            "tag": user_infos["account"]["tag"],
-            "security": user_infos["account"]["security"],
-            "addedDate": user_infos["account"]["added_date"],
-            "locked": user_infos["account"]["locked"],
-            "parentEmailStatus": user_infos["account"]["parent_email_status"],
-            "avatar": user_infos["account"]["avatar_url"],
-            "isGuest": False,
-            "isErrored": False,
-            "needRefresh": False,
-            "active": user_infos["account"]["is_otp_active"],
-            "gameList": [
-                {
-                    "isFreeToPlay": False,
-                    "isFormerSubscriber": False,
-                    "isSubscribed": user_infos["game"]["subscribed"],
-                    "totalPlayTime": user_infos["game"]["total_time_elapsed"],
-                    "endOfSubscribe": user_infos["game"]["expiration_date"],
-                    "id": 1,
-                }
-            ],
-        }
-        return json.dumps(expected)
+        raise ValueError("<!> Account info not found in settings !")
 
     @retry_internet
     def settings_get(self, hash: str, key: str) -> str:
