@@ -9,21 +9,21 @@ from requests.adapters import HTTPAdapter
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import SETTINGS_PATH
-from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
+from ankama_launcher_emulator.consts import SETTINGS_PATH
+from ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.haapi.urls import (
+from ankama_launcher_emulator.haapi.urls import (
     ANKAMA_ACCOUNT_CREATE_TOKEN,
     ANKAMA_ACCOUNT_SIGN_ON_WITH_API_KEY,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.haapi.zaap_version import (
+from ankama_launcher_emulator.haapi.zaap_version import (
     ZAAP_VERSION,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.deciphered_cert import (
+from ankama_launcher_emulator.interfaces.deciphered_cert import (
     DecipheredCertifDatas,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.internet_utils import (
+from ankama_launcher_emulator.internet_utils import (
     retry_internet,
 )
 

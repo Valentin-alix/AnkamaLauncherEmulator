@@ -8,16 +8,16 @@ from typing import Any
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import pad, unpad
 
-from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import (
+from ankama_launcher_emulator.consts import (
     API_KEY_FOLDER_PATH,
     CERTIFICATE_FOLDER_PATH,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.device import Device
-from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.deciphered_api_key import (
+from ankama_launcher_emulator.decrypter.device import Device
+from ankama_launcher_emulator.interfaces.deciphered_api_key import (
     DecipheredApiKey,
     DecipheredApiKeyDatas,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.deciphered_cert import (
+from ankama_launcher_emulator.interfaces.deciphered_cert import (
     DecipheredCertifDatas,
     StoredCertificate,
 )

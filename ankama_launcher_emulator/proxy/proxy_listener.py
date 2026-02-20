@@ -8,10 +8,10 @@ from time import sleep
 
 import socks
 
-from AnkamaLauncherEmulator.ankama_launcher_emulator.proxy.connection_proxy import (
+from ankama_launcher_emulator.proxy.connection_proxy import (
     ConnectionProxy,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.proxy.proxy import Proxy
+from ankama_launcher_emulator.proxy.proxy import Proxy
 
 logger = logging.getLogger()
 

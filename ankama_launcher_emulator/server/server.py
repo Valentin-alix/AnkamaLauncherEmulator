@@ -13,33 +13,33 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
-from AnkamaLauncherEmulator.ankama_launcher_emulator.proxy.proxy_listener import (
+from ankama_launcher_emulator.proxy.proxy_listener import (
     ProxyListener,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.redirect import (
+from ankama_launcher_emulator.redirect import (
     run_proxy_config_in_thread,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.server.pending_tracker import (
+from ankama_launcher_emulator.server.pending_tracker import (
     PendingConnectionTracker,
 )
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import (
+from ankama_launcher_emulator.consts import (
     DOFUS_PATH,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
+from ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.gen_zaap.zaap import ZaapService
-from AnkamaLauncherEmulator.ankama_launcher_emulator.haapi.haapi import Haapi
-from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.account_game_info import (
+from ankama_launcher_emulator.gen_zaap.zaap import ZaapService
+from ankama_launcher_emulator.haapi.haapi import Haapi
+from ankama_launcher_emulator.interfaces.account_game_info import (
     AccountGameInfo,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.interfaces.game_name_enum import (
+from ankama_launcher_emulator.interfaces.game_name_enum import (
     GameNameEnum,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.server.handler import (
+from ankama_launcher_emulator.server.handler import (
     AnkamaLauncherHandler,
 )
 
@@ -152,7 +152,7 @@ class AnkamaLauncherServer:
 
 
 def main():
-    from AnkamaLauncherEmulator.ankama_launcher_emulator.gui import run_gui
+    from ankama_launcher_emulator.gui import run_gui
 
     run_gui()
 

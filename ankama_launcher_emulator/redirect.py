@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from mitmproxy import http, options
 from mitmproxy.tools.dump import DumpMaster
 
-from AnkamaLauncherEmulator.ankama_launcher_emulator.consts import BASE_CONFIG_URL
+from ankama_launcher_emulator.consts import BASE_CONFIG_URL
 
 PROXY_EXCEPTIONS = "haapi.ankama.com"
 
@@ -87,9 +87,7 @@ def run_proxy_config_in_thread(
     get_next_port: Callable[[], int | None] | None = None,
 ) -> threading.Thread:
     thread = threading.Thread(
-        target=lambda: asyncio.run(
-            start_proxy_dofus_config(with_logs, get_next_port)
-        ),
+        target=lambda: asyncio.run(start_proxy_dofus_config(with_logs, get_next_port)),
         daemon=True,
     )
     thread.start()

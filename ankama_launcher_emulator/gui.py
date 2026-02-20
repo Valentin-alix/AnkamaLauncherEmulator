@@ -4,19 +4,19 @@ from urllib.parse import urlparse
 import psutil
 from nicegui import ui
 
-from AnkamaLauncherEmulator.ankama_launcher_emulator.decrypter.crypto_helper import (
+from ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.internet_utils import (
+from ankama_launcher_emulator.internet_utils import (
     get_available_network_interfaces,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.proxy.proxy_listener import (
+from ankama_launcher_emulator.proxy.proxy_listener import (
     ProxyListener,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.server.handler import (
+from ankama_launcher_emulator.server.handler import (
     AnkamaLauncherHandler,
 )
-from AnkamaLauncherEmulator.ankama_launcher_emulator.server.server import (
+from ankama_launcher_emulator.server.server import (
     AnkamaLauncherServer,
 )
 
