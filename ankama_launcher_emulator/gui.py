@@ -124,7 +124,9 @@ def run_gui() -> None:
                             try:
                                 source_ip: str | None = _ip_select.value or None
                                 raw_proxy = _proxy_input.value.strip() or None
-                                proxy_listener, proxy_url = _build_proxy_listener(raw_proxy)
+                                proxy_listener, proxy_url = _build_proxy_listener(
+                                    raw_proxy
+                                )
                                 pid = server.launch_dofus(
                                     _login,
                                     proxy_listener=proxy_listener,
@@ -136,7 +138,9 @@ def run_gui() -> None:
                             except Exception as e:
                                 _state.running = False
                                 _set_stopped(_card, _btn)
-                                ui.notify(f"Failed to launch {_login}: {e}", type="negative")
+                                ui.notify(
+                                    f"Failed to launch {_login}: {e}", type="negative"
+                                )
 
                     btn.on_click(on_click)
 
@@ -151,7 +155,3 @@ def run_gui() -> None:
         ui.timer(2.0, check_processes)
 
     ui.run(title="Ankama Launcher", port=8081, reload=False, dark=True)
-
-
-if __name__ in {"__main__", "__mp_main__"}:
-    run_gui()

@@ -156,6 +156,7 @@ dependencies = [
     { name = "protobuf" },
     { name = "psutil" },
     { name = "pycryptodomex" },
+    { name = "pyinstall" },
     { name = "pysocks" },
     { name = "python-dateutil" },
     { name = "requests" },
@@ -176,6 +177,7 @@ requires-dist = [
     { name = "protobuf", specifier = "==5.28.3" },
     { name = "psutil", specifier = ">3.0.0" },
     { name = "pycryptodomex", specifier = ">=3.21.0,<4" },
+    { name = "pyinstall", specifier = ">=0.1.4" },
     { name = "pysocks", specifier = ">=1.7.1" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0,<3" },
     { name = "requests", specifier = ">1.0.0" },
@@ -1770,6 +1772,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b014
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
 ]
+
+[[package]]
+name = "pyinstall"
+version = "0.1.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/cc/8554fe5499561da83e80186e9603616c0a5e091b78237bc2abf9b66d86d3/pyinstall-0.1.4.tar.gz", hash = "sha256:bb2407a3664ce25454f7e4a93763198f3a6a43c0cc727e33a06c0ce18324cd15", size = 37894, upload-time = "2008-10-15T17:31:47Z" }
 
 [[package]]
 name = "pylsqpack"
