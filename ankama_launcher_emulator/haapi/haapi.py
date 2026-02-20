@@ -23,7 +23,7 @@ from ankama_launcher_emulator.haapi.zaap_version import (
 from ankama_launcher_emulator.interfaces.deciphered_cert import (
     DecipheredCertifDatas,
 )
-from ankama_launcher_emulator.internet_utils import (
+from ankama_launcher_emulator.utils.internet import (
     retry_internet,
 )
 

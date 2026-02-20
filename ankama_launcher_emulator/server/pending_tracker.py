@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field
 
 from ankama_launcher_emulator.redirect import set_proxy
-from src.utils.metaclasses.singleton import Singleton
+from ankama_launcher_emulator.utils.metaclasses.singleton import Singleton
 
 logger = logging.getLogger()
 

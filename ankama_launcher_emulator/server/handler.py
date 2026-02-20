@@ -12,7 +12,7 @@ from ankama_launcher_emulator.haapi.haapi import (
 from ankama_launcher_emulator.interfaces.account_game_info import (
     AccountGameInfo,
 )
-from ankama_launcher_emulator.internet_utils import (
+from ankama_launcher_emulator.utils.internet import (
     retry_internet,
 )
 

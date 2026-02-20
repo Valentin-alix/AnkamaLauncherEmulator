@@ -8,12 +8,8 @@
 - Install dependencies
     `uv sync`
 
-## Running an Account
 
-Go to `src/server/server.py`, modify the login, then run:
-```bash
-python src/server/server.py
-```
+## Development
 
 ## Code Generation
 

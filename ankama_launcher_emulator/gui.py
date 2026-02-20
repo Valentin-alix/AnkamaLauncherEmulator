@@ -7,9 +7,6 @@ from nicegui import ui
 from ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
 )
-from ankama_launcher_emulator.internet_utils import (
-    get_available_network_interfaces,
-)
 from ankama_launcher_emulator.proxy.proxy_listener import (
     ProxyListener,
 )
@@ -18,6 +15,9 @@ from ankama_launcher_emulator.server.handler import (
 )
 from ankama_launcher_emulator.server.server import (
     AnkamaLauncherServer,
+)
+from ankama_launcher_emulator.utils.internet import (
+    get_available_network_interfaces,
 )
 
 
