@@ -27,6 +27,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from ankama_launcher_emulator.consts import (
     DOFUS_PATH,
+    RETRO_PATH,
 )
 from ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
@@ -137,6 +138,44 @@ class AnkamaLauncherServer:
             "ZAAP_LOGS_PATH": log_path,
             "ZAAP_PORT": "26116",
             "ZAAP_RELEASE": "dofus3",
+        }
+
+        return self._launch_exe(command, env)
+
+    def _launch_retro_exe(
+        self, random_hash: str, config_url: str, proxy: str | None
+    ) -> int:
+        log_path = os.path.join(
+            os.environ["LOCALAPPDATA"],
+            "Roaming",
+            "zaap",
+            "gamesLogs",
+            "retro",
+            "retro.log",
+        )
+
+        command = [
+            RETRO_PATH,
+            "--port",
+            "26116",
+            "--gameName",
+            GameNameEnum.RETRO.value,
+            "--gameRelease",
+            "main",
+            "--instanceId",
+            str(self.instance_id),
+            "--gameInstanceKey",
+            random_hash,
+        ]
+
+        env = {
+            "ZAAP_CAN_AUTH": "true",
+            "ZAAP_GAME": GameNameEnum.RETRO.value,
+            "ZAAP_HASH": random_hash,
+            "ZAAP_INSTANCE_ID": str(self.instance_id),
+            "ZAAP_LOGS_PATH": log_path,
+            "ZAAP_PORT": "26116",
+            "ZAAP_RELEASE": "main",
         }
 
         return self._launch_exe(command, env)

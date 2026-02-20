@@ -19,6 +19,18 @@ else:
     print("<!> No Dofus path found !")
 
 
+RETRO_RELEASE_JSON_PATH = os.path.join(
+    ZAAP_PATH, "repositories", "production", "retro", "main", "release.json"
+)
+if os.path.exists(RETRO_RELEASE_JSON_PATH):
+    with open(RETRO_RELEASE_JSON_PATH, "r") as file:
+        content = json.load(file)
+        RETRO_PATH = os.path.join(content["location"], "Dofus Retro.exe")
+else:
+    RETRO_PATH = "DUMMY_RETRO_PATH"
+    print("<!> No Retro path found !")
+
+
 CERTIFICATE_FOLDER_PATH = os.path.join(ZAAP_PATH, "certificate")
 API_KEY_FOLDER_PATH = os.path.join(ZAAP_PATH, "keydata")
 OFFICIAL_CONFIG_URL = r"https://dofus2.cdn.ankama.com/config/dofus3.json"
