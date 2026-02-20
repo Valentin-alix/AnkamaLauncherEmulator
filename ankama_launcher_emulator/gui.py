@@ -68,11 +68,26 @@ def run_gui() -> None:
             ui.label("No stored accounts found.").classes("text-red-500")
             return
 
+        cards: dict[str, ui.card] = {}
+        btns: dict[str, ui.button] = {}
+
+        def _set_running(_card: ui.card, _btn: ui.button) -> None:
+            _card.classes(add="border-green-500", remove="border-gray-600")
+            _btn.set_text("Stop")
+            _btn.classes(add="bg-red-600", remove="bg-blue-600")
+
+        def _set_stopped(_card: ui.card, _btn: ui.button) -> None:
+            _card.classes(add="border-gray-600", remove="border-green-500")
+            _btn.set_text("Launch")
+            _btn.classes(add="bg-blue-600", remove="bg-red-600")
+
         for account in accounts:
             login = account["apikey"]["login"]
 
-            with ui.card().classes("w-full mb-1"):
-                with ui.row().classes("gap-4 w-full"):
+            card = ui.card().classes("w-full mb-1 border-l-4 border-gray-600")
+            cards[login] = card
+            with card:
+                with ui.row().classes("items-center gap-4 w-full"):
                     ui.label(login).classes("font-mono flex-1")
 
                     ip_select = ui.select(
@@ -82,41 +97,56 @@ def run_gui() -> None:
 
                     proxy_input = ui.input(
                         label="Proxy URL (socks5://user:pass@host:port)",
-                        placeholder="socks5://user:pass@host:port",
                         validation={"Proxy URL not valid": _validation_proxy_url},
                     ).classes("w-128")
 
-                    def on_launch(
+                    btn = ui.button("Launch").classes("bg-blue-600 text-white w-24")
+                    btns[login] = btn
+
+                    def on_click(
                         _login: str = login,
+                        _card: ui.card = card,
+                        _btn: ui.button = btn,
                         _ip_select: ui.select = ip_select,
                         _proxy_input: ui.input = proxy_input,
                         _state: SimpleNamespace = states[login],
                     ):
-                        source_ip: str | None = _ip_select.value or None
-                        raw_proxy = _proxy_input.value.strip() or None
-                        proxy_listener, proxy_url = _build_proxy_listener(raw_proxy)
-                        pid = server.launch_dofus(
-                            _login,
-                            proxy_listener=proxy_listener,
-                            proxy_url=proxy_url,
-                            source_ip=source_ip,
-                        )
-                        launched_pids[_login] = pid
-                        _state.running = True
-                        ui.notify(f"Launched {_login}", type="positive")
+                        if _state.running:
+                            pid = launched_pids.get(_login)
+                            if pid and psutil.pid_exists(pid):
+                                psutil.Process(pid).terminate()
+                            launched_pids.pop(_login, None)
+                            _state.running = False
+                            _set_stopped(_card, _btn)
+                        else:
+                            _state.running = True
+                            _set_running(_card, _btn)
+                            try:
+                                source_ip: str | None = _ip_select.value or None
+                                raw_proxy = _proxy_input.value.strip() or None
+                                proxy_listener, proxy_url = _build_proxy_listener(raw_proxy)
+                                pid = server.launch_dofus(
+                                    _login,
+                                    proxy_listener=proxy_listener,
+                                    proxy_url=proxy_url,
+                                    source_ip=source_ip,
+                                )
+                                launched_pids[_login] = pid
+                                ui.notify(f"Launched {_login}", type="positive")
+                            except Exception as e:
+                                _state.running = False
+                                _set_stopped(_card, _btn)
+                                ui.notify(f"Failed to launch {_login}: {e}", type="negative")
 
-                    btn = ui.button("Launch", on_click=on_launch).classes(
-                        "bg-blue-600 text-white"
-                    )
-                    btn.bind_enabled_from(
-                        states[login], "running", backward=lambda state: not state
-                    )
+                    btn.on_click(on_click)
 
         def check_processes():
             for login, pid in list(launched_pids.items()):
                 if not psutil.pid_exists(pid):
                     del launched_pids[login]
                     states[login].running = False
+                    _set_stopped(cards[login], btns[login])
+                    ui.notify(f"{login} stopped", type="warning")
 
         ui.timer(2.0, check_processes)
 
