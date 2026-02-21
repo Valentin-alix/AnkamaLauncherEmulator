@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 import sys
@@ -47,6 +48,9 @@ from ankama_launcher_emulator.server.handler import (
 LAUNCHER_PORT = 26116
 
 
+logger = logging.getLogger()
+
+
 @dataclass
 class AnkamaLauncherServer:
     handler: AnkamaLauncherHandler
@@ -72,6 +76,7 @@ class AnkamaLauncherServer:
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
         Thread(target=server.serve, daemon=True).start()
+        logger.info(f"Thrift server listening on port {LAUNCHER_PORT}")
 
     def launch_dofus(
         self,
@@ -80,6 +85,7 @@ class AnkamaLauncherServer:
         proxy_url: str | None = None,
         source_ip: str | None = None,
     ) -> int:
+        logger.info(f"Launching {login} on dofus 3")
         random_hash = str(uuid.uuid4())
         self.instance_id += 1
 
@@ -148,6 +154,7 @@ class AnkamaLauncherServer:
         proxy_url: str | None = None,
         source_ip: str | None = None,
     ) -> int:
+        logger.info(f"Launching {login} on retro")
         random_hash = str(uuid.uuid4())
         self.instance_id += 1
 
@@ -163,28 +170,18 @@ class AnkamaLauncherServer:
         return self._launch_retro_exe(random_hash)
 
     def _launch_retro_exe(self, random_hash: str) -> int:
-        log_path = os.path.join(
-            os.environ["LOCALAPPDATA"],
-            "Roaming",
-            "zaap",
-            "gamesLogs",
-            "retro",
-            "retro.log",
-        )
+        log_path = os.path.join(os.environ["APPDATA"], "zaap", "gamesLogs", "retro")
 
         command = [
             RETRO_PATH,
-            "--port",
-            "26116",
-            "--gameName",
-            GameNameEnum.RETRO.value,
-            "--gameRelease",
-            "main",
-            "--instanceId",
-            str(self.instance_id),
-            "--gameInstanceKey",
-            random_hash,
+            f"--port={str(LAUNCHER_PORT)}",
+            f"--gameName={GameNameEnum.RETRO.value}",
+            "--gameRelease=main",
+            f"--instanceId={str(self.instance_id)}",
+            f"--gameInstanceKey={random_hash}",
         ]
+
+        logger.info(command)
 
         env = {
             "ZAAP_CAN_AUTH": "true",
@@ -192,27 +189,17 @@ class AnkamaLauncherServer:
             "ZAAP_HASH": random_hash,
             "ZAAP_INSTANCE_ID": str(self.instance_id),
             "ZAAP_LOGS_PATH": log_path,
-            "ZAAP_PORT": "26116",
+            "ZAAP_PORT": str(LAUNCHER_PORT),
             "ZAAP_RELEASE": "main",
         }
 
         return self._launch_exe(command, env)
 
-    def _launch_exe(self, command: list[str], env: dict[str, Any]) -> int:
+    def _launch_exe(self, command: list[str] | str, env: dict[str, Any]) -> int:
         process = subprocess.Popen(
             command,
-            env=os.environ.copy()
-            | env,  # original env (without converting to uppercase) + custom zaap env
+            env=os.environ.copy() | env,
             start_new_session=True,
+            cwd=os.path.dirname(command[0]),
         )
         return process.pid
-
-
-def main():
-    from ankama_launcher_emulator.gui import run_gui
-
-    run_gui()
-
-
-if __name__ == "__main__":
-    main()
