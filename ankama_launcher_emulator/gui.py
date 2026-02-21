@@ -57,7 +57,9 @@ def run_gui() -> None:
     launched_dofus_pids: dict[str, int] = {}
     launched_retro_pids: dict[str, int] = {}
     states: dict[str, SimpleNamespace] = {
-        account["apikey"]["login"]: SimpleNamespace(dofus_running=False, retro_running=False)
+        account["apikey"]["login"]: SimpleNamespace(
+            dofus_running=False, retro_running=False
+        )
         for account in accounts
     }
 
@@ -119,10 +121,14 @@ def run_gui() -> None:
                         validation={"Proxy URL not valid": _validation_proxy_url},
                     ).classes("w-128")
 
-                    dofus_btn = ui.button("Dofus 3").classes("bg-blue-600 text-white w-24")
+                    dofus_btn = ui.button("Dofus 3").classes(
+                        "bg-blue-600 text-white w-24"
+                    )
                     dofus_btns[login] = dofus_btn
 
-                    retro_btn = ui.button("Retro").classes("bg-amber-600 text-white w-24")
+                    retro_btn = ui.button("Retro").classes(
+                        "bg-amber-600 text-white w-24"
+                    )
                     retro_btns[login] = retro_btn
 
                     def on_dofus_click(
@@ -156,12 +162,15 @@ def run_gui() -> None:
                                     source_ip=source_ip,
                                 )
                                 launched_dofus_pids[_login] = pid
-                                ui.notify(f"Launched Dofus 3 for {_login}", type="positive")
+                                ui.notify(
+                                    f"Launched Dofus 3 for {_login}", type="positive"
+                                )
                             except Exception as e:
                                 _state.dofus_running = False
                                 _set_dofus_stopped(_card, _btn, _login)
                                 ui.notify(
-                                    f"Failed to launch Dofus 3 for {_login}: {e}", type="negative"
+                                    f"Failed to launch Dofus 3 for {_login}: {e}",
+                                    type="negative",
                                 )
 
                     def on_retro_click(
@@ -182,22 +191,15 @@ def run_gui() -> None:
                         else:
                             _state.retro_running = True
                             _set_retro_running(_card, _btn, _login)
-                            try:
-                                source_ip: str | None = _ip_select.value or None
-                                raw_proxy = _proxy_input.value.strip() or None
-                                pid = server.launch_retro(
-                                    _login,
-                                    proxy_url=raw_proxy,
-                                    source_ip=source_ip,
-                                )
-                                launched_retro_pids[_login] = pid
-                                ui.notify(f"Launched Retro for {_login}", type="positive")
-                            except Exception as e:
-                                _state.retro_running = False
-                                _set_retro_stopped(_card, _btn, _login)
-                                ui.notify(
-                                    f"Failed to launch Retro for {_login}: {e}", type="negative"
-                                )
+                            source_ip: str | None = _ip_select.value or None
+                            raw_proxy = _proxy_input.value.strip() or None
+                            pid = server.launch_retro(
+                                _login,
+                                proxy_url=raw_proxy,
+                                source_ip=source_ip,
+                            )
+                            launched_retro_pids[_login] = pid
+                            ui.notify(f"Launched Retro for {_login}", type="positive")
 
                     dofus_btn.on_click(on_dofus_click)
                     retro_btn.on_click(on_retro_click)
