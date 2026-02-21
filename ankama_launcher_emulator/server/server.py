@@ -28,16 +28,13 @@ from ankama_launcher_emulator.redirect import (
 from ankama_launcher_emulator.server.pending_tracker import (
     PendingConnectionTracker,
 )
+from ankama_launcher_emulator.utils.proxy import get_info_by_proxy_url
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from ankama_launcher_emulator.consts import (
     DOFUS_PATH,
     RETRO_PATH,
-    SOCKS5_HOST,
-    SOCKS5_PASSWORD,
-    SOCKS5_PORT,
-    SOCKS5_USERNAME,
 )
 from ankama_launcher_emulator.decrypter.crypto_helper import (
     CryptoHelper,
@@ -169,14 +166,19 @@ class AnkamaLauncherServer:
 
         port = randint(57000, 63000)
 
-        retro_server = RetroServer(
-            self.handler,
-            port,
-            SOCKS5_HOST,
-            SOCKS5_PORT,
-            SOCKS5_USERNAME,
-            SOCKS5_PASSWORD,
-        )
+        if proxy_url:
+            parsed = get_info_by_proxy_url(proxy_url)
+            retro_server = RetroServer(
+                self.handler,
+                port,
+                parsed.hostname,
+                parsed.port,
+                parsed.username,
+                parsed.password,
+            )
+        else:
+            retro_server = RetroServer(self.handler, port)
+
         retro_server.start()
 
         random_hash = str(uuid.uuid4())
