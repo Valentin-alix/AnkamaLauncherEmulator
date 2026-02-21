@@ -41,7 +41,4 @@ SETTINGS_PATH = os.path.join(ZAAP_PATH, "Settings")
 BASE_CONFIG_URL = "https://dofus2.cdn.ankama.com/config/dofus3.json"
 
 
-SOCKS5_HOST = "185.162.130.85"
-SOCKS5_PORT = 10000
-SOCKS5_USERNAME = "090de9c7b643e2e1"
-SOCKS5_PASSWORD = "x0JriSUK"
+PROXY_URL = "http://090de9c7b643e2e1:x0JriSUK@185.162.130.85:10000"
