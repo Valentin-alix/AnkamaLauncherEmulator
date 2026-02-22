@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from ankama_launcher_emulator.proxy.proxy_listener import ProxyListener
+from ankama_launcher_emulator.proxy.dofus3.proxy_listener import ProxyListener
 
 
 def validation_proxy_url(proxy_url: str | None) -> bool:

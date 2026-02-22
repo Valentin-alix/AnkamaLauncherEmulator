@@ -42,3 +42,4 @@ BASE_CONFIG_URL = "https://dofus2.cdn.ankama.com/config/dofus3.json"
 
 
 PROXY_URL = "http://090de9c7b643e2e1:x0JriSUK@185.162.130.85:10000"
+LAUNCHER_PORT = 26116
