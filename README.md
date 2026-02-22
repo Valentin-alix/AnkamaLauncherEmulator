@@ -4,7 +4,7 @@ A tool that emulates the Ankama Launcher to launch **Dofus 3** and **Dofus RETRO
 
 ![alt text](docs/screenshot.png)
 
-## How to used it
+## How to use it
 
 - Simply get the .exe in Releases and execute it.
 
