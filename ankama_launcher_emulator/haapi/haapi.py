@@ -92,7 +92,6 @@ class Haapi:
 
     @retry_internet
     def createToken(self, game_id: int, certif: DecipheredCertifDatas) -> str:
-        # https://haapi.ankama.com/json/Ankama/v5/Account/CreateToken?game=1&certificate_id=407269037&certificate_hash=4c4ab1b3684623f7
         url = ANKAMA_ACCOUNT_CREATE_TOKEN
         params = {
             "game": game_id,

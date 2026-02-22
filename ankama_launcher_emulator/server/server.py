@@ -17,13 +17,7 @@ from ankama_launcher_emulator.proxy.dofus3.proxy_listener import (
     ProxyListener,
 )
 from ankama_launcher_emulator.proxy.retro.retro_proxy import RetroServer
-from ankama_launcher_emulator.redirect import (
-    run_proxy_config_in_thread,
-)
 from ankama_launcher_emulator.server.dofus3.launch import launch_dofus_exe
-from ankama_launcher_emulator.server.dofus3.pending_tracker import (
-    PendingConnectionTracker,
-)
 from ankama_launcher_emulator.server.retro.launch import launch_retro_exe
 from ankama_launcher_emulator.utils.proxy import get_info_by_proxy_url
 
@@ -52,10 +46,6 @@ class AnkamaLauncherServer:
     _dofus_threads: list[Thread] = field(init=False, default_factory=list)
 
     def start(self):
-        run_proxy_config_in_thread(
-            get_next_port=PendingConnectionTracker().pop_next_port
-        )
-
         for proc in process_iter():
             if proc.pid == 0:
                 continue
@@ -95,7 +85,6 @@ class AnkamaLauncherServer:
 
         connection_port = proxy_listener.start(port=0, interface_ip=interface_ip)
 
-        PendingConnectionTracker().register_launch(port=connection_port)
         return launch_dofus_exe(
             self.instance_id, random_hash, connection_port=connection_port
         )

@@ -33,12 +33,8 @@ else:
 
 CERTIFICATE_FOLDER_PATH = os.path.join(ZAAP_PATH, "certificate")
 API_KEY_FOLDER_PATH = os.path.join(ZAAP_PATH, "keydata")
-OFFICIAL_CONFIG_URL = r"https://dofus2.cdn.ankama.com/config/dofus3.json"
-
 
 SETTINGS_PATH = os.path.join(ZAAP_PATH, "Settings")
-
-BASE_CONFIG_URL = "https://dofus2.cdn.ankama.com/config/dofus3.json"
 
 
 PROXY_URL = "http://090de9c7b643e2e1:x0JriSUK@185.162.130.85:10000"
