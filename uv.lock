@@ -151,13 +151,11 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "frida" },
-    { name = "frida-tools" },
     { name = "mitmproxy" },
     { name = "nicegui" },
     { name = "protobuf" },
     { name = "psutil" },
     { name = "pycryptodomex" },
-    { name = "pyright" },
     { name = "pysocks" },
     { name = "python-dateutil" },
     { name = "requests" },
@@ -168,18 +166,18 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "black" },
+    { name = "frida-tools" },
+    { name = "pyright" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "frida", specifier = ">=16.6.5,<17" },
-    { name = "frida-tools", specifier = ">=13.7.1" },
     { name = "mitmproxy", specifier = ">=12.2.1" },
     { name = "nicegui", specifier = ">=2.0.0" },
     { name = "protobuf", specifier = "==5.28.3" },
     { name = "psutil", specifier = ">3.0.0" },
     { name = "pycryptodomex", specifier = ">=3.21.0,<4" },
-    { name = "pyright", specifier = ">=1.1.408" },
     { name = "pysocks", specifier = ">=1.7.1" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0,<3" },
     { name = "requests", specifier = ">1.0.0" },
@@ -188,7 +186,11 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "black", specifier = ">=24.10.0,<25" }]
+dev = [
+    { name = "black", specifier = ">=24.10.0,<25" },
+    { name = "frida-tools", specifier = ">=13.7.1" },
+    { name = "pyright", specifier = ">=1.1.408" },
+]
 
 [[package]]
 name = "annotated-doc"

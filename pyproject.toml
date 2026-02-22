@@ -21,9 +21,7 @@ dependencies = [
     "pysocks>=1.7.1",
     "protobuf==5.28.3",
     "nicegui>=2.0.0",
-    "frida-tools>=13.7.1",
-    "pyright>=1.1.408",
 ]
 
 [dependency-groups]
-dev = ["black>=24.10.0,<25"]
+dev = ["black>=24.10.0,<25","pyright>=1.1.408","frida-tools>=13.7.1"]
