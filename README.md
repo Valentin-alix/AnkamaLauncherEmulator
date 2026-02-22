@@ -1,6 +1,14 @@
 # Ankama Launcher Emulator
 
-A tool that emulates the Ankama Launcher to launch **Dofus 3** directly — without needing the official launcher running. Supports multi-account management, per-account SOCKS5 proxies, and network interface selection, all from a simple web UI.
+A tool that emulates the Ankama Launcher to launch **Dofus 3** and **Dofus RETRO** directly — without needing the official launcher running. Supports multi-account management, per-account SOCKS5 proxies, and network interface selection, all from a simple web UI.
+
+![alt text](docs/screenshot.png)
+
+## How to used it
+
+- Simply get the .exe in Releases and execute it.
+
+Then you can go to http://127.0.0.1:8081 to access this beautiful (no) interface
 
 ---
 
@@ -19,7 +27,7 @@ You must have logged in at least once through the official Ankama Launcher so th
 
 ## Requirements
 
-- **Dofus 3** installed via the official Ankama Launcher (at least one account logged in)
+- **Dofus 3** or **RETRO** installed via the official Ankama Launcher (at least one account logged in)
 - **Python >= 3.12**
 - **uv** — fast Python package manager
 
