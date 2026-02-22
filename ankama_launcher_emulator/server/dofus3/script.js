@@ -2,11 +2,14 @@ const TARGET_PORTS = new Set([5555]);
 
 recv(function (message) {
     const proxyPort = message.port;
-    hookConnect(proxyPort);
+    const proxyIp = Array.isArray(message.proxyIp) && message.proxyIp.length === 4
+        ? message.proxyIp
+        : [127, 0, 0, 1];
+    hookConnect(proxyPort, proxyIp);
 });
 
 
-function hookConnect(proxyPort) {
+function hookConnect(proxyPort, proxyIp) {
     const connectPtr = Module.getExportByName("ws2_32.dll", "connect");
 
     Interceptor.attach(connectPtr, {
@@ -15,13 +18,13 @@ function hookConnect(proxyPort) {
                 const sockaddr = args[1];
                 const family = sockaddr.readU16();
 
-                // add(nb octet) permet de déplacer le point à nb d'octet apres sockaddr 
+                // add(nb octet) permet de déplacer le point à nb d'octet apres sockaddr
                 if (family === 2) { // IPV4
                     const port = (sockaddr.add(2).readU8() << 8) | sockaddr.add(3).readU8();
 
                     if (!TARGET_PORTS.has(port)) return
 
-                    sockaddr.add(4).writeU32(0x0100007F); // 127.0.0.1
+                    sockaddr.add(4).writeByteArray(proxyIp);
                     sockaddr.add(2).writeU8((proxyPort >> 8) & 0xFF);
                     sockaddr.add(3).writeU8(proxyPort & 0xFF);
 
@@ -38,7 +41,7 @@ function hookConnect(proxyPort) {
                         0x00, 0x00, 0x00, 0x00, // 0-3
                         0x00, 0x00, 0x00, 0x00, // 4-7
                         0x00, 0x00, 0xFF, 0xFF, // 8-11
-                        0x7F, 0x00, 0x00, 0x01  // 12-15 = 127.0.0.1
+                        proxyIp[0], proxyIp[1], proxyIp[2], proxyIp[3]
                     ]);
 
                     sockaddr.add(2).writeU8((proxyPort >> 8) & 0xFF);

@@ -86,7 +86,7 @@ class AnkamaLauncherServer:
         connection_port = proxy_listener.start(port=0, interface_ip=interface_ip)
 
         return launch_dofus_exe(
-            self.instance_id, random_hash, connection_port=connection_port
+            self.instance_id, random_hash, connection_port=connection_port, interface_ip=interface_ip
         )
 
     def launch_retro(

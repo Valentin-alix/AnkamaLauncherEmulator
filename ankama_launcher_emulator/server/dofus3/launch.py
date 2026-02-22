@@ -10,7 +10,7 @@ from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 logger = logging.getLogger()
 
 
-def launch_dofus_exe(instance_id: int, random_hash: str, connection_port: int) -> int:
+def launch_dofus_exe(instance_id: int, random_hash: str, connection_port: int, interface_ip: str | None = None) -> int:
     log_path = os.path.join(
         os.environ["LOCALAPPDATA"],
         "Roaming",
@@ -55,16 +55,17 @@ def launch_dofus_exe(instance_id: int, random_hash: str, connection_port: int) -
 
     pid = frida.spawn(program=command, env=env)
 
-    load_frida_script(pid, connection_port, resume=True)
+    load_frida_script(pid, connection_port, interface_ip=interface_ip, resume=True)
 
     return pid
 
 
-def load_frida_script(pid: int, port: int, resume: bool = False):
+def load_frida_script(pid: int, port: int, interface_ip: str | None = None, resume: bool = False):
     hook_path = Path(__file__).parent / "script.js"
     session = frida.attach(pid)
     script = session.create_script(hook_path.read_text(encoding="utf-8"))
     script.load()
-    script.post({"port": port})
+    proxy_ip = [int(part) for part in interface_ip.split(".")] if interface_ip else [127, 0, 0, 1]
+    script.post({"port": port, "proxyIp": proxy_ip})
     if resume:
         frida.resume(pid)
