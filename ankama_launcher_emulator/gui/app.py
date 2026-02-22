@@ -1,14 +1,146 @@
-from nicegui import ui
+import sys
+from pathlib import Path
+
+from PyQt6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QMainWindow,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
+from qfluentwidgets import (
+    BodyLabel,
+    InfoBar,
+    InfoBarPosition,
+    Theme,
+    TitleLabel,
+    setTheme,
+)
 
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
-from ankama_launcher_emulator.gui.account_card import (
-    build_account_card,
-    make_game_handler,
-)
+from ankama_launcher_emulator.gui.account_card import AccountCard
+from ankama_launcher_emulator.gui.game_selector_card import GameSelectorCard
 from ankama_launcher_emulator.server.handler import AnkamaLauncherHandler
 from ankama_launcher_emulator.server.server import AnkamaLauncherServer
 from ankama_launcher_emulator.utils.internet import get_available_network_interfaces
 from ankama_launcher_emulator.utils.proxy import build_proxy_listener
+
+_RESOURCES = Path(__file__).parent.parent.parent / "resources"
+
+
+class MainWindow(QMainWindow):
+    def __init__(
+        self, server: AnkamaLauncherServer, accounts: list, all_interface: dict
+    ):
+        super().__init__()
+        self._server = server
+        self._setup_ui(accounts, all_interface)
+
+    def _setup_ui(self, accounts: list, all_interface: dict) -> None:
+        self.setWindowTitle("Ankama Launcher")
+        self.setMinimumWidth(800)
+
+        central = QWidget()
+        central.setObjectName("central")
+        self._central = central
+        self.setCentralWidget(central)
+
+        layout = QVBoxLayout(central)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
+
+        if not accounts:
+            label = BodyLabel("No stored accounts found.")
+            label.setStyleSheet("color: #ef4444;")
+            layout.addWidget(label)
+            return
+
+        self._dofus_selector = GameSelectorCard("Dofus 3", _RESOURCES / "Dofus3.png")
+        self._retro_selector = GameSelectorCard("Rétro", _RESOURCES / "DofusRetro.png")
+        self._dofus_selector.clicked.connect(lambda: self._select_game(is_dofus=True))
+        self._retro_selector.clicked.connect(lambda: self._select_game(is_dofus=False))
+
+        selector_row = QHBoxLayout()
+        selector_row.setSpacing(12)
+        selector_row.addWidget(self._dofus_selector)
+        selector_row.addWidget(self._retro_selector)
+        layout.addLayout(selector_row)
+
+        self.title_label = TitleLabel("Dofus 3")
+        layout.addWidget(self.title_label)
+
+        self._stack = QStackedWidget()
+        self._dofus_page = self._make_game_page(accounts, all_interface, is_dofus=True)
+        self._retro_page = self._make_game_page(accounts, all_interface, is_dofus=False)
+        self._stack.addWidget(self._dofus_page)
+        self._stack.addWidget(self._retro_page)
+        layout.addWidget(self._stack)
+
+        self._select_game(is_dofus=True)
+
+    def _select_game(self, is_dofus: bool) -> None:
+        self.title_label.setText("Dofus 3" if is_dofus else "Retro")
+        self._dofus_selector.set_active(is_dofus)
+        self._retro_selector.set_active(not is_dofus)
+        self._stack.setCurrentWidget(self._dofus_page if is_dofus else self._retro_page)
+
+    def _make_game_page(
+        self, accounts: list, all_interface: dict, is_dofus: bool
+    ) -> QWidget:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(0, 4, 0, 0)
+        layout.setSpacing(8)
+
+        for account in accounts:
+            login = account["apikey"]["login"]
+            card = AccountCard(login, all_interface, page)
+            if is_dofus:
+                card.launch_requested.connect(
+                    lambda iface, proxy, _login=login: self._launch_dofus(
+                        _login, iface, proxy
+                    )
+                )
+            else:
+                card.launch_requested.connect(
+                    lambda iface, proxy, _login=login: self._launch_retro(
+                        _login, iface, proxy
+                    )
+                )
+            card.error_occurred.connect(self._show_error)
+            layout.addWidget(card)
+
+        layout.addStretch()
+        return page
+
+    def _launch_dofus(
+        self, login: str, interface_ip: str | None, proxy_url: str | None
+    ) -> None:
+        proxy_listener, proxy_url = build_proxy_listener(proxy_url)
+        self._server.launch_dofus(
+            login,
+            proxy_listener=proxy_listener,
+            proxy_url=proxy_url,
+            interface_ip=interface_ip,
+        )
+        self._show_success(f"Dofus 3 lancé pour {login}")
+
+    def _launch_retro(
+        self, login: str, interface_ip: str | None, proxy_url: str | None
+    ) -> None:
+        self._server.launch_retro(login, proxy_url=proxy_url, interface_ip=interface_ip)
+        self._show_success(f"Rétro lancé pour {login}")
+
+    def _show_success(self, msg: str) -> None:
+        InfoBar.success(
+            "", msg, duration=3000, position=InfoBarPosition.TOP_RIGHT, parent=self
+        )
+
+    def _show_error(self, msg: str) -> None:
+        InfoBar.error(
+            "", msg, duration=3000, position=InfoBarPosition.TOP_RIGHT, parent=self
+        )
 
 
 def run_gui() -> None:
@@ -18,47 +150,11 @@ def run_gui() -> None:
 
     accounts = CryptoHelper.getStoredApiKeys()
     interfaces = get_available_network_interfaces()
-    all_interface = {v: k for k, v in ({"Empty": None} | interfaces).items()}
+    all_interface = {v: k for k, v in ({"Auto": None} | interfaces).items()}
 
-    @ui.page("/")
-    def index():  # pyright: ignore[reportUnusedFunction]
-        ui.label("Ankama Launcher").classes("text-2xl font-bold mb-4")
+    app = QApplication(sys.argv)
+    setTheme(Theme.DARK)
 
-        if not accounts:
-            ui.label("No stored accounts found.").classes("text-red-500")
-            return
-
-        for account in accounts:
-            login = account["apikey"]["login"]
-            dofus_btn, retro_btn, ip_select, proxy_input = build_account_card(
-                login, all_interface
-            )
-
-            def launch_dofus(
-                interface_ip: str, proxy_url: str | None, _login: str = login
-            ):
-                proxy_listener, proxy_url = build_proxy_listener(proxy_url)
-                server.launch_dofus(
-                    _login,
-                    proxy_listener=proxy_listener,
-                    proxy_url=proxy_url,
-                    interface_ip=interface_ip,
-                )
-
-            def launch_retro(
-                interface_ip: str, proxy_url: str | None, _login: str = login
-            ):
-                server.launch_retro(
-                    _login, proxy_url=proxy_url, interface_ip=interface_ip
-                )
-
-            dofus_btn.on_click(
-                make_game_handler(
-                    login, ip_select, proxy_input, "Dofus 3", launch_dofus
-                )
-            )
-            retro_btn.on_click(
-                make_game_handler(login, ip_select, proxy_input, "Retro", launch_retro)
-            )
-
-    ui.run(title="Ankama Launcher", port=8081, reload=False, dark=True)
+    window = MainWindow(server, accounts, all_interface)
+    window.show()
+    sys.exit(app.exec())

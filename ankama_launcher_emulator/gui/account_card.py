@@ -1,40 +1,54 @@
-from typing import Callable
-
-from nicegui import ui
+from PyQt6.QtCore import QTimer, pyqtSignal
+from PyQt6.QtWidgets import QHBoxLayout
+from qfluentwidgets import BodyLabel, CardWidget, ComboBox, LineEdit, PrimaryPushButton
 
 from ankama_launcher_emulator.utils.proxy import validation_proxy_url
 
 
-def make_game_handler(
-    login: str,
-    ip_select: ui.select,
-    proxy_input: ui.input,
-    label: str,
-    do_launch: Callable,
-):
-    def on_click():
-        interface_ip = ip_select.value or None
-        raw_proxy = proxy_input.value.strip() or None
-        do_launch(interface_ip, raw_proxy)
-        ui.notify(f"Launched {label} for {login}", type="positive")
+class AccountCard(CardWidget):
+    launch_requested = pyqtSignal(object, object)  # (interface_ip: str | None, proxy_url: str | None)
+    error_occurred = pyqtSignal(str)
 
-    return on_click
+    def __init__(self, login: str, all_interface: dict, parent=None):
+        super().__init__(parent)
+        self.login = login
+        self._setup_ui(all_interface)
 
+    def _setup_ui(self, all_interface: dict) -> None:
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(12)
 
-def build_account_card(
-    login: str,
-    all_interface: dict,
-) -> tuple[ui.button, ui.button, ui.select, ui.input]:
-    with ui.card().classes("w-full mb-1"):
-        with ui.row().classes("items-center gap-4 w-full"):
-            ui.label(login).classes("font-mono flex-1")
-            ip_select = ui.select(
-                options=all_interface, label="Local interface"
-            ).classes("w-56")
-            proxy_input = ui.input(
-                label="Proxy URL (socks5://user:pass@host:port)",
-                validation={"Proxy URL not valid": validation_proxy_url},
-            ).classes("w-128")
-            dofus_btn = ui.button("Dofus 3").classes("bg-blue-600 text-white w-24")
-            retro_btn = ui.button("Retro").classes("bg-amber-600 text-white w-24")
-    return dofus_btn, retro_btn, ip_select, proxy_input
+        layout.addWidget(BodyLabel(self.login), 1)
+
+        self._ip_combo = ComboBox()
+        self._ip_combo.setFixedWidth(150)
+        for ip_value, display_name in all_interface.items():
+            self._ip_combo.addItem(display_name, ip_value)
+        layout.addWidget(self._ip_combo)
+
+        self._proxy_input = LineEdit()
+        self._proxy_input.setPlaceholderText("Proxy (socks5://user:pass@host:port)")
+        self._proxy_input.setFixedWidth(300)
+        layout.addWidget(self._proxy_input)
+
+        self._launch_btn = PrimaryPushButton("Lancer")
+        self._launch_btn.setFixedWidth(100)
+        self._launch_btn.clicked.connect(self._on_launch_clicked)
+        layout.addWidget(self._launch_btn)
+
+    def _on_launch_clicked(self) -> None:
+        interface_ip = self._ip_combo.currentData() or None
+        proxy_url = self._proxy_input.text().strip() or None
+
+        if proxy_url and not validation_proxy_url(proxy_url):
+            self.error_occurred.emit("Proxy URL invalide")
+            return
+
+        self._launch_btn.setDisabled(True)
+        timer = QTimer(self)
+        timer.setSingleShot(True)
+        timer.timeout.connect(lambda: self._launch_btn.setDisabled(False))
+        timer.start(3000)
+
+        self.launch_requested.emit(interface_ip, proxy_url)
