@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Callable
 
 from PyQt6.QtWidgets import (
     QApplication,
@@ -42,8 +43,6 @@ class MainWindow(QMainWindow):
         self.setMinimumWidth(800)
 
         central = QWidget()
-        central.setObjectName("central")
-        self._central = central
         self.setCentralWidget(central)
 
         layout = QVBoxLayout(central)
@@ -67,12 +66,12 @@ class MainWindow(QMainWindow):
         selector_row.addWidget(self._retro_selector)
         layout.addLayout(selector_row)
 
-        self.title_label = TitleLabel("Dofus 3")
-        layout.addWidget(self.title_label)
+        self._title_label = TitleLabel("Dofus 3")
+        layout.addWidget(self._title_label)
 
         self._stack = QStackedWidget()
-        self._dofus_page = self._make_game_page(accounts, all_interface, is_dofus=True)
-        self._retro_page = self._make_game_page(accounts, all_interface, is_dofus=False)
+        self._dofus_page = self._make_game_page(accounts, all_interface, self._launch_dofus)
+        self._retro_page = self._make_game_page(accounts, all_interface, self._launch_retro)
         self._stack.addWidget(self._dofus_page)
         self._stack.addWidget(self._retro_page)
         layout.addWidget(self._stack)
@@ -80,13 +79,16 @@ class MainWindow(QMainWindow):
         self._select_game(is_dofus=True)
 
     def _select_game(self, is_dofus: bool) -> None:
-        self.title_label.setText("Dofus 3" if is_dofus else "Retro")
+        self._title_label.setText("Dofus 3" if is_dofus else "Rétro")
         self._dofus_selector.set_active(is_dofus)
         self._retro_selector.set_active(not is_dofus)
         self._stack.setCurrentWidget(self._dofus_page if is_dofus else self._retro_page)
 
     def _make_game_page(
-        self, accounts: list, all_interface: dict, is_dofus: bool
+        self,
+        accounts: list,
+        all_interface: dict,
+        launch: Callable[[str, str | None, str | None], None],
     ) -> QWidget:
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -96,18 +98,9 @@ class MainWindow(QMainWindow):
         for account in accounts:
             login = account["apikey"]["login"]
             card = AccountCard(login, all_interface, page)
-            if is_dofus:
-                card.launch_requested.connect(
-                    lambda iface, proxy, _login=login: self._launch_dofus(
-                        _login, iface, proxy
-                    )
-                )
-            else:
-                card.launch_requested.connect(
-                    lambda iface, proxy, _login=login: self._launch_retro(
-                        _login, iface, proxy
-                    )
-                )
+            card.launch_requested.connect(
+                lambda iface, proxy, _login=login: launch(_login, iface, proxy)
+            )
             card.error_occurred.connect(self._show_error)
             layout.addWidget(card)
 

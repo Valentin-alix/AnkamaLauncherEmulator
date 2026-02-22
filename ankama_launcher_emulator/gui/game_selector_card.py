@@ -5,6 +5,8 @@ from PyQt6.QtGui import QColor, QFont, QMouseEvent, QPixmap
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel
 
 COLOR = QColor("#00470E")
+COLOR_ACTIVE = COLOR.lighter(200).name()
+COLOR_INACTIVE = COLOR.darker(200).name()
 
 
 class GameSelectorCard(QFrame):
@@ -38,28 +40,10 @@ class GameSelectorCard(QFrame):
         layout.addWidget(self._title_label, 1)
 
     def set_active(self, active: bool) -> None:
-        if active:
-            color = COLOR.lighter(200)
-            self.setStyleSheet(
-                f"""
-                GameSelectorCard {{
-                    background-color: {color.name()};
-                    border-radius: 8px;
-                }}
-                """
-            )
-            self._title_label.setStyleSheet("color: white")
-        else:
-            color = COLOR.darker(200)
-            self.setStyleSheet(
-                f"""
-                GameSelectorCard {{
-                    background-color: {color.name()};
-                    border-radius: 8px;
-                }}
-                """
-            )
-            self._title_label.setStyleSheet("color: white;")
+        bg = COLOR_ACTIVE if active else COLOR_INACTIVE
+        self.setStyleSheet(
+            f"GameSelectorCard {{ background-color: {bg}; border-radius: 8px; }}"
+        )
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:
