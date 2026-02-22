@@ -24,6 +24,7 @@ You must have logged in at least once through the official Ankama Launcher so th
 - **uv** — fast Python package manager
 
 Install uv:
+
 ```bash
 pip install uv
 ```
@@ -60,13 +61,11 @@ Download the latest release or build it yourself (see [Packaging](#packaging)), 
 
 Each stored account appears as a card. For each account you can:
 
-| Option | Description |
-|---|---|
+| Option              | Description                                                                |
+| ------------------- | -------------------------------------------------------------------------- |
 | **Local interface** | Select which network interface Dofus will use (useful for multi-IP setups) |
-| **Proxy URL** | Optional SOCKS5 proxy for this account (`socks5://user:pass@host:port`) |
-| **Launch / Stop** | Start or kill the Dofus instance for this account |
-
-The card border turns green while the game is running. If the game process exits on its own, the card resets automatically.
+| **Proxy URL**       | Optional SOCKS5 proxy for this account (`socks5://user:pass@host:port`)    |
+| **Dofus / Retro**   | Start Dofus3 or Retro instance for this account                            |
 
 > **Note:** You can launch multiple accounts simultaneously, each with its own proxy and interface.
 
