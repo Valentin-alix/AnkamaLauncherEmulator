@@ -29,12 +29,12 @@ from ankama_launcher_emulator.utils.internet import (
 
 
 class InterfaceAdapter(HTTPAdapter):
-    def __init__(self, source_ip: str, **kwargs):
-        self.source_ip = source_ip
+    def __init__(self, interface_ip: str, **kwargs):
+        self.interface_ip = interface_ip
         super().__init__(**kwargs)
 
     def init_poolmanager(self, *args, **kwargs):
-        kwargs["source_address"] = (self.source_ip, 0)
+        kwargs["source_address"] = (self.interface_ip, 0)
         super().init_poolmanager(*args, **kwargs)
 
 
@@ -54,7 +54,7 @@ logger = logging.getLogger()
 class Haapi:
     api_key: str
     login: str
-    source_ip: str | None
+    interface_ip: str | None
     proxy_url: str | None
 
     def __post_init__(self):
@@ -64,8 +64,8 @@ class Haapi:
                 "http": self.proxy_url,
                 "https": self.proxy_url,
             }
-        if self.source_ip:
-            adapter = InterfaceAdapter(self.source_ip)
+        if self.interface_ip:
+            adapter = InterfaceAdapter(self.interface_ip)
             self.zaap_session.mount("https://", adapter)
             self.zaap_session.mount("http://", adapter)
         self.zaap_headers = {

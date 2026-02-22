@@ -13,10 +13,10 @@ def make_game_handler(
     do_launch: Callable,
 ):
     def on_click():
-        source_ip = ip_select.value or None
+        interface_ip = ip_select.value or None
         raw_proxy = proxy_input.value.strip() or None
         try:
-            do_launch(source_ip, raw_proxy)
+            do_launch(interface_ip, raw_proxy)
             ui.notify(f"Launched {label} for {login}", type="positive")
         except Exception as e:
             ui.notify(f"Failed to launch {label} for {login}: {e}", type="negative")

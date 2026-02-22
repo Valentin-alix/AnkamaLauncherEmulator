@@ -91,7 +91,7 @@ class AnkamaLauncherServer:
         login: str,
         proxy_listener: ProxyListener,
         proxy_url: str | None = None,
-        source_ip: str | None = None,
+        interface_ip: str | None = None,
     ) -> int:
         logger.info(f"Launching {login} on dofus 3")
         random_hash = str(uuid.uuid4())
@@ -103,10 +103,12 @@ class AnkamaLauncherServer:
             login=login,
             game_id=102,
             api_key=api_key,
-            haapi=Haapi(api_key, source_ip=source_ip, login=login, proxy_url=proxy_url),
+            haapi=Haapi(
+                api_key, interface_ip=interface_ip, login=login, proxy_url=proxy_url
+            ),
         )
 
-        connection_port = proxy_listener.start(port=0, interface_ip=source_ip)
+        connection_port = proxy_listener.start(port=0, interface_ip=interface_ip)
 
         PendingConnectionTracker().register_launch(port=connection_port)
         return self._launch_dofus_exe(random_hash, connection_port=connection_port)
@@ -160,7 +162,7 @@ class AnkamaLauncherServer:
         self,
         login: str,
         proxy_url: str | None = None,
-        source_ip: str | None = None,
+        interface_ip: str | None = None,
     ) -> int:
         logger.info(f"Launching {login} on retro")
 
@@ -171,13 +173,14 @@ class AnkamaLauncherServer:
             retro_server = RetroServer(
                 self.handler,
                 port,
+                interface_ip,
                 parsed.hostname,
                 parsed.port,
                 parsed.username,
                 parsed.password,
             )
         else:
-            retro_server = RetroServer(self.handler, port)
+            retro_server = RetroServer(self.handler, port, interface_ip)
 
         retro_server.start()
 
@@ -190,7 +193,9 @@ class AnkamaLauncherServer:
             login=login,
             game_id=101,
             api_key=api_key,
-            haapi=Haapi(api_key, source_ip=source_ip, login=login, proxy_url=proxy_url),
+            haapi=Haapi(
+                api_key, interface_ip=interface_ip, login=login, proxy_url=proxy_url
+            ),
         )
 
         return self._launch_retro_exe(random_hash, port)
@@ -301,7 +306,6 @@ class AnkamaLauncherServer:
         }}
         catch(e){{
             console.log("ERREUR: " + e.message);
-            console.log(e);
         }}
         """
         return frida_script

@@ -14,6 +14,7 @@ logger = logging.getLogger()
 class RetroServer(Thread):
     handler: AnkamaLauncherHandler
     port: int
+    interface_ip: str | None
     socks5_host: str | None = None
     socks5_port: int | None = None
     socks5_username: str | None = None
@@ -23,7 +24,7 @@ class RetroServer(Thread):
         super().__init__(daemon=True)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind(("127.0.0.1", self.port))
-        self.sock.listen(2)
+        self.sock.listen(1)
 
     def run(self):
         print(f"[RETRO] Listening on port {self.port}")
@@ -91,6 +92,9 @@ class RetroServer(Thread):
                 password=self.socks5_password,
                 rdns=False,
             )
+
+        if self.interface_ip is not None:
+            remote_sock.bind((self.interface_ip, 0))
 
         remote_sock.connect((host, remote_port))
 
