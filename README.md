@@ -8,7 +8,7 @@ A tool that emulates the Ankama Launcher to launch **Dofus 3** and **Dofus RETRO
 
 - Simply get the .exe in Releases and execute it.
 
-Then you can go to http://127.0.0.1:8081 to access this beautiful (no) interface
+Then you access this beautiful (no) interface
 
 ---
 
@@ -58,8 +58,6 @@ uv sync
 ```bash
 uv run main.py
 ```
-
-Then open your browser at [http://localhost:8081](http://localhost:8081).
 
 ### Run the packaged executable
 
