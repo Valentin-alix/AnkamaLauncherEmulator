@@ -37,5 +37,5 @@ API_KEY_FOLDER_PATH = os.path.join(ZAAP_PATH, "keydata")
 SETTINGS_PATH = os.path.join(ZAAP_PATH, "Settings")
 
 
-PROXY_URL = "http://090de9c7b643e2e1:x0JriSUK@185.162.130.85:10000"
+PROXY_URL = "http://c11dfd1d285080f6:NnU2okrD@185.162.130.85:10000"
 LAUNCHER_PORT = 26116

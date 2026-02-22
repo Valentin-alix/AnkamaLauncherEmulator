@@ -23,7 +23,7 @@ class RetroServer(Thread):
     def __post_init__(self):
         super().__init__(daemon=True)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("127.0.0.1", self.port))
+        self.sock.bind((self.interface_ip or "127.0.0.1", self.port))
         self.sock.listen(1)
 
     def run(self):
@@ -82,8 +82,8 @@ class RetroServer(Thread):
 
         logger.info(f"[RETRO] Tunneling to {host}:{remote_port}")
 
-        remote_sock = socks.socksocket(socket.AF_INET, socket.SOCK_STREAM)
         if self.socks5_host and self.socks5_port:
+            remote_sock = socks.socksocket(socket.AF_INET, socket.SOCK_STREAM)
             remote_sock.set_proxy(
                 socks.SOCKS5,
                 addr=self.socks5_host,
@@ -92,6 +92,8 @@ class RetroServer(Thread):
                 password=self.socks5_password,
                 rdns=False,
             )
+        else:
+            remote_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         if self.interface_ip is not None:
             remote_sock.bind((self.interface_ip, 0))

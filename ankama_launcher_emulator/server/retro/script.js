@@ -4,6 +4,7 @@
 
 let retroCdnList = [];
 let localProxyPort = 0;
+let proxyIp = [127, 0, 0, 1];
 
 rpc.exports = {
     init(config) {
@@ -12,6 +13,9 @@ rpc.exports = {
         }
         if (typeof config.port === 'number') {
             localProxyPort = config.port;
+        }
+        if (Array.isArray(config.proxyIp) && config.proxyIp.length === 4) {
+            proxyIp = config.proxyIp;
         }
     }
 };
@@ -54,7 +58,7 @@ try {
             const newPortLow = localProxyPort & 0xff;
 
             sockaddrPtr.add(2).writeByteArray([newPortHigh, newPortLow]);
-            sockaddrPtr.add(4).writeByteArray([127, 0, 0, 1]);
+            sockaddrPtr.add(4).writeByteArray(proxyIp);
 
             this.shouldSend = true;
         },

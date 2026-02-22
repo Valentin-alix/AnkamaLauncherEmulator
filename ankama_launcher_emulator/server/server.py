@@ -129,4 +129,4 @@ class AnkamaLauncherServer:
             ),
         )
 
-        return launch_retro_exe(self.instance_id, random_hash, port)
+        return launch_retro_exe(self.instance_id, random_hash, port, interface_ip=interface_ip)

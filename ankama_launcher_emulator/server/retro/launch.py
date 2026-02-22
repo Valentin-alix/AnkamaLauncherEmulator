@@ -15,7 +15,7 @@ RETRO_CDN = json.dumps(socket.gethostbyname_ex("dofusretro.cdn.ankama.com")[2])
 logger = logging.getLogger()
 
 
-def launch_retro_exe(instance_id: int, random_hash: str, port: int) -> int:
+def launch_retro_exe(instance_id: int, random_hash: str, port: int, interface_ip: str | None = None) -> int:
     log_path = os.path.join(os.environ["APPDATA"], "zaap", "gamesLogs", "retro")
 
     command: list[str | bytes] = [
@@ -41,12 +41,12 @@ def launch_retro_exe(instance_id: int, random_hash: str, port: int) -> int:
 
     pid = frida.spawn(program=command, env=env)
 
-    load_frida_script(pid, port, resume=True)
+    load_frida_script(pid, port, interface_ip=interface_ip, resume=True)
 
     return pid
 
 
-def load_frida_script(pid: int, port: int, resume: bool = False):
+def load_frida_script(pid: int, port: int, interface_ip: str | None = None, resume: bool = False):
     session = frida.attach(pid)
     script = session.create_script(open(Path(__file__).parent / "script.js").read())
 
@@ -56,10 +56,13 @@ def load_frida_script(pid: int, port: int, resume: bool = False):
             logger.info(
                 f"Processus enfant détecté, injection Frida sur PID {child_pid}"
             )
-            load_frida_script(child_pid, port, resume=False)
+            load_frida_script(child_pid, port, interface_ip=interface_ip, resume=False)
 
     script.on("message", on_message)
     script.load()
-    script.post({"retroCdn": RETRO_CDN, "port": port})
+
+    proxy_ip = [int(x) for x in interface_ip.split(".")] if interface_ip else [127, 0, 0, 1]
+    script.exports.init({"retroCdn": json.loads(RETRO_CDN), "port": port, "proxyIp": proxy_ip})
+
     if resume:
         frida.resume(pid)
