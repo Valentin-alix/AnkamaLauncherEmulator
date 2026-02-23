@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -21,6 +22,7 @@ from qfluentwidgets import (
 
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.gui.account_card import AccountCard
+from ankama_launcher_emulator.gui.consts import DOFUS_3_TITLE, DOFUS_RETRO_TITLE
 from ankama_launcher_emulator.gui.game_selector_card import GameSelectorCard
 from ankama_launcher_emulator.server.handler import AnkamaLauncherHandler
 from ankama_launcher_emulator.server.server import AnkamaLauncherServer
@@ -55,10 +57,16 @@ class MainWindow(QMainWindow):
             layout.addWidget(label)
             return
 
-        self._dofus_selector = GameSelectorCard("Dofus 3", _RESOURCES / "Dofus3.png")
-        self._retro_selector = GameSelectorCard("Rétro", _RESOURCES / "DofusRetro.png")
-        self._dofus_selector.clicked.connect(lambda: self._select_game(is_dofus=True))
-        self._retro_selector.clicked.connect(lambda: self._select_game(is_dofus=False))
+        self._dofus_selector = GameSelectorCard(
+            DOFUS_3_TITLE, _RESOURCES / "Dofus3.png", True
+        )
+        self._retro_selector = GameSelectorCard(
+            DOFUS_RETRO_TITLE, _RESOURCES / "DofusRetro.png", False
+        )
+        self._dofus_selector.clicked.connect(lambda: self._select_game(is_dofus_3=True))
+        self._retro_selector.clicked.connect(
+            lambda: self._select_game(is_dofus_3=False)
+        )
 
         selector_row = QHBoxLayout()
         selector_row.setSpacing(12)
@@ -66,23 +74,28 @@ class MainWindow(QMainWindow):
         selector_row.addWidget(self._retro_selector)
         layout.addLayout(selector_row)
 
-        self._title_label = TitleLabel("Dofus 3")
+        self._title_label = TitleLabel(DOFUS_3_TITLE)
+        self._title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self._title_label)
 
         self._stack = QStackedWidget()
-        self._dofus_page = self._make_game_page(accounts, all_interface, self._launch_dofus)
-        self._retro_page = self._make_game_page(accounts, all_interface, self._launch_retro)
+        self._dofus_page = self._make_game_page(
+            accounts, all_interface, self._launch_dofus
+        )
+        self._retro_page = self._make_game_page(
+            accounts, all_interface, self._launch_retro
+        )
         self._stack.addWidget(self._dofus_page)
         self._stack.addWidget(self._retro_page)
         layout.addWidget(self._stack)
 
-        self._select_game(is_dofus=True)
-
-    def _select_game(self, is_dofus: bool) -> None:
-        self._title_label.setText("Dofus 3" if is_dofus else "Rétro")
-        self._dofus_selector.set_active(is_dofus)
-        self._retro_selector.set_active(not is_dofus)
-        self._stack.setCurrentWidget(self._dofus_page if is_dofus else self._retro_page)
+    def _select_game(self, is_dofus_3: bool) -> None:
+        self._title_label.setText(DOFUS_3_TITLE if is_dofus_3 else DOFUS_RETRO_TITLE)
+        self._dofus_selector.set_active(is_dofus_3)
+        self._retro_selector.set_active(not is_dofus_3)
+        self._stack.setCurrentWidget(
+            self._dofus_page if is_dofus_3 else self._retro_page
+        )
 
     def _make_game_page(
         self,
@@ -143,7 +156,7 @@ def run_gui() -> None:
 
     accounts = CryptoHelper.getStoredApiKeys()
     interfaces = get_available_network_interfaces()
-    all_interface = {v: k for k, v in ({"Auto": None} | interfaces).items()}
+    all_interface = {value: key for key, value in ({"Auto": None} | interfaces).items()}
 
     app = QApplication(sys.argv)
     setTheme(Theme.DARK)

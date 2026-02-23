@@ -6,7 +6,9 @@ from ankama_launcher_emulator.utils.proxy import validation_proxy_url
 
 
 class AccountCard(CardWidget):
-    launch_requested = pyqtSignal(object, object)  # (interface_ip: str | None, proxy_url: str | None)
+    launch_requested = pyqtSignal(
+        object, object
+    )  # (interface_ip: str | None, proxy_url: str | None)
     error_occurred = pyqtSignal(str)
 
     def __init__(self, login: str, all_interface: dict, parent=None):
@@ -32,7 +34,7 @@ class AccountCard(CardWidget):
         self._proxy_input.setFixedWidth(300)
         layout.addWidget(self._proxy_input)
 
-        self._launch_btn = PrimaryPushButton("Lancer")
+        self._launch_btn = PrimaryPushButton("Launch")
         self._launch_btn.setFixedWidth(100)
         self._launch_btn.clicked.connect(self._on_launch_clicked)
         layout.addWidget(self._launch_btn)
@@ -42,7 +44,7 @@ class AccountCard(CardWidget):
         proxy_url = self._proxy_input.text().strip() or None
 
         if proxy_url and not validation_proxy_url(proxy_url):
-            self.error_occurred.emit("Proxy URL invalide")
+            self.error_occurred.emit("Invalid proxy url")
             return
 
         self._launch_btn.setDisabled(True)

@@ -12,12 +12,12 @@ COLOR_INACTIVE = COLOR.darker(200).name()
 class GameSelectorCard(QFrame):
     clicked = pyqtSignal()
 
-    def __init__(self, title: str, logo_path: Path, parent=None):
+    def __init__(self, title: str, logo_path: Path, is_active: bool, parent=None):
         super().__init__(parent)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setMinimumHeight(72)
         self._setup_ui(title, logo_path)
-        self.set_active(False)
+        self.set_active(is_active)
 
     def _setup_ui(self, title: str, logo_path: Path) -> None:
         layout = QHBoxLayout(self)
