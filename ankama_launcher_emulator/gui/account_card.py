@@ -3,6 +3,7 @@ from PyQt6.QtCore import QTimer, pyqtSignal
 from PyQt6.QtWidgets import QHBoxLayout, QLabel
 from qfluentwidgets import BodyLabel, CardWidget, ComboBox, LineEdit, PrimaryPushButton
 
+from ankama_launcher_emulator.gui.consts import GREEN_HEXA
 from ankama_launcher_emulator.utils.proxy import validation_proxy_url
 
 
@@ -12,7 +13,9 @@ class AccountCard(CardWidget):
     )  # (interface_ip: str | None, proxy_url: str | None)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, login: str, all_interface: dict, parent=None):
+    def __init__(
+        self, login: str, all_interface: dict[str, tuple[str, str]], parent=None
+    ):
         super().__init__(parent)
         self.login = login
         self._current_pid: int | None = None
@@ -22,23 +25,30 @@ class AccountCard(CardWidget):
         self._monitor_timer.setInterval(1500)
         self._monitor_timer.timeout.connect(self._check_process)
 
-    def _setup_ui(self, all_interface: dict) -> None:
+    def _setup_ui(self, all_interface: dict[str, tuple[str, str]]) -> None:
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 12, 16, 12)
         layout.setSpacing(12)
 
         self._status_dot = QLabel()
         self._status_dot.setFixedSize(10, 10)
-        self._status_dot.setStyleSheet("background-color: #22c55e; border-radius: 5px;")
+        self._status_dot.setStyleSheet(
+            f"background-color: {GREEN_HEXA}; border-radius: 5px;"
+        )
         self._status_dot.setVisible(False)
         layout.addWidget(self._status_dot)
 
         layout.addWidget(BodyLabel(self.login), 1)
 
         self._ip_combo = ComboBox()
-        self._ip_combo.setFixedWidth(150)
-        for ip_value, display_name in all_interface.items():
-            self._ip_combo.addItem(display_name, ip_value)
+        self._ip_combo.addItem("Auto", userData=None)
+        self._ip_combo.setFixedWidth(200)
+
+        for ip_value, (display_name, public_ip) in all_interface.items():
+            self._ip_combo.addItem(
+                f"{display_name}\t{public_ip}",
+                userData=ip_value,
+            )
         layout.addWidget(self._ip_combo)
 
         self._proxy_input = LineEdit()

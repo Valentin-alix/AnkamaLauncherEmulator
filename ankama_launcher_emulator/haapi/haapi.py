@@ -5,7 +5,8 @@ from typing import Any
 
 import requests
 import urllib3
-from requests.adapters import HTTPAdapter
+
+from ankama_launcher_emulator.utils.internet import InterfaceAdapter
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -26,16 +27,6 @@ from ankama_launcher_emulator.interfaces.deciphered_cert import (
 from ankama_launcher_emulator.utils.internet import (
     retry_internet,
 )
-
-
-class InterfaceAdapter(HTTPAdapter):
-    def __init__(self, interface_ip: str, **kwargs):
-        self.interface_ip = interface_ip
-        super().__init__(**kwargs)
-
-    def init_poolmanager(self, *args, **kwargs):
-        kwargs["source_address"] = (self.interface_ip, 0)
-        super().init_poolmanager(*args, **kwargs)
 
 
 def get_account_info_by_login(login: str):

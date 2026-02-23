@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 
 if os.name == "nt":
     ZAAP_PATH = os.path.join(os.environ["APPDATA"], "zaap")
@@ -46,14 +47,17 @@ SETTINGS_PATH = os.path.join(ZAAP_PATH, "Settings")
 PROXY_URL = "http://c11dfd1d285080f6:NnU2okrD@185.162.130.85:10000"
 LAUNCHER_PORT = 26116
 
-GITHUB_URL = "https://github.com/Valentin-alix/AnkamaLauncherEmulatorProxy"
+GITHUB_URL = "https://github.com/Valentin-alix/AnkamaLauncherEmulator"
 
 if os.name == "nt":
-    _app_config_dir = os.path.join(os.environ["APPDATA"], "AnkamaLauncherEmulatorProxy")
+    app_config_dir = os.path.join(os.environ["APPDATA"], "AnkamaLauncherEmulator")
 else:
-    _app_config_dir = os.path.join(
+    app_config_dir = os.path.join(
         os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")),
-        "AnkamaLauncherEmulatorProxy",
+        "AnkamaLauncherEmulator",
     )
-os.makedirs(_app_config_dir, exist_ok=True)
-APP_CONFIG_PATH = os.path.join(_app_config_dir, "config.json")
+os.makedirs(app_config_dir, exist_ok=True)
+
+APP_CONFIG_PATH = os.path.join(app_config_dir, "config.json")
+
+RESOURCES = Path(__file__).parent.parent / "resources"
