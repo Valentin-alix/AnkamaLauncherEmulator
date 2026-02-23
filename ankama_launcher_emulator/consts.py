@@ -14,9 +14,12 @@ RELEASE_JSON_PATH = os.path.join(
 if os.path.exists(RELEASE_JSON_PATH):
     with open(RELEASE_JSON_PATH, "r") as file:
         content = json.load(file)
-        DOFUS_PATH = os.path.join(
-            content["location"], "Dofus.exe" if os.name == "nt" else "Dofus"
-        )
+        if not content.get("location"):
+            DOFUS_PATH = "DUMMY_PATH"
+        else:
+            DOFUS_PATH = os.path.join(
+                content["location"], "Dofus.exe" if os.name == "nt" else "Dofus"
+            )
 else:
     DOFUS_PATH = "DUMMY_PATH"
     print("<!> No Dofus path found !")
@@ -28,8 +31,11 @@ RETRO_RELEASE_JSON_PATH = os.path.join(
 )
 if os.path.exists(RETRO_RELEASE_JSON_PATH):
     with open(RETRO_RELEASE_JSON_PATH, "r") as file:
-        content = json.load(file)
-        RETRO_PATH = os.path.join(
+        content: dict = json.load(file)
+        if not content.get("location"):
+            RETRO_PATH = "DUMMY_RETRO_PATH"
+        else:
+            RETRO_PATH = os.path.join(
             content["location"], "Dofus Retro.exe" if os.name == "nt" else "DofusRetro"
         )
 else:

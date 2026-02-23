@@ -17,7 +17,7 @@ from ankama_launcher_emulator.consts import (
 )
 
 
-class SystemRequirementCard(CardWidget):
+class StarBar(CardWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -47,6 +47,7 @@ class SystemRequirementCard(CardWidget):
 
 
 def has_shown_star_repo() -> bool:
+    return True
     if not os.path.exists(APP_CONFIG_PATH):
         return False
     with open(APP_CONFIG_PATH, "r") as file:

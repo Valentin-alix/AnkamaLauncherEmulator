@@ -26,7 +26,7 @@ from ankama_launcher_emulator.gui.consts import (
 )
 from ankama_launcher_emulator.gui.game_selector_card import GameSelectorCard
 from ankama_launcher_emulator.gui.star_dialog import (
-    SystemRequirementCard,
+    StarBar,
     has_shown_star_repo,
 )
 from ankama_launcher_emulator.gui.utils import run_in_background
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         layout.setSpacing(12)
 
         if not has_shown_star_repo():
-            layout.addWidget(SystemRequirementCard())
+            layout.addWidget(StarBar())
 
         if not accounts:
             label = BodyLabel(
@@ -72,13 +72,13 @@ class MainWindow(QMainWindow):
             return
 
         self._dofus_selector = GameSelectorCard(
-            DOFUS_3_TITLE, RESOURCES / "Dofus3.png", True, available=DOFUS_INSTALLED
+            DOFUS_3_TITLE, RESOURCES / "Dofus3.png", False, available=DOFUS_INSTALLED
         )
         self._retro_selector = GameSelectorCard(
             DOFUS_RETRO_TITLE,
             RESOURCES / "DofusRetro.png",
             False,
-            available=RETRO_INSTALLED,
+            available=RETRO_INSTALLED
         )
         self._dofus_selector.clicked.connect(lambda: self._select_game(is_dofus_3=True))
         self._retro_selector.clicked.connect(
@@ -109,6 +109,8 @@ class MainWindow(QMainWindow):
         self._stack.addWidget(self._dofus_page)
         self._stack.addWidget(self._retro_page)
         layout.addWidget(self._stack)
+
+        self._select_game(DOFUS_INSTALLED or not RETRO_INSTALLED)
 
     def _select_game(self, is_dofus_3: bool) -> None:
         self._title_label.setText(DOFUS_3_TITLE if is_dofus_3 else DOFUS_RETRO_TITLE)
@@ -158,7 +160,7 @@ class MainWindow(QMainWindow):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         label = BodyLabel(
-            f"Client {game_title} not found.\n"
+            f"{game_title} client not found.\n"
             f"Install game via Ankama launcher then relaunch application."
         )
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
