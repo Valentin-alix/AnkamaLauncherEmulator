@@ -48,6 +48,7 @@ dependencies = [
     { name = "protobuf" },
     { name = "psutil" },
     { name = "pycryptodomex" },
+    { name = "pyinstaller" },
     { name = "pyqt6-fluent-widgets" },
     { name = "pyright" },
     { name = "pysocks" },
@@ -61,7 +62,6 @@ dependencies = [
 dev = [
     { name = "black" },
     { name = "frida-tools" },
-    { name = "pyinstaller" },
 ]
 
 [package.metadata]
@@ -71,6 +71,7 @@ requires-dist = [
     { name = "protobuf", specifier = "==5.28.3" },
     { name = "psutil", specifier = ">3.0.0" },
     { name = "pycryptodomex", specifier = ">=3.21.0,<4" },
+    { name = "pyinstaller", specifier = ">=6.19.0" },
     { name = "pyqt6-fluent-widgets", specifier = ">=1.11.1" },
     { name = "pyright", specifier = ">=1.1.408" },
     { name = "pysocks", specifier = ">=1.7.1" },
@@ -84,7 +85,6 @@ requires-dist = [
 dev = [
     { name = "black", specifier = ">=24.10.0,<25" },
     { name = "frida-tools", specifier = ">=13.7.1" },
-    { name = "pyinstaller", specifier = ">=6.19.0" },
 ]
 
 [[package]]
