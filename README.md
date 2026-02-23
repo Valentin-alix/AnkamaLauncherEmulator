@@ -44,8 +44,8 @@ pip install uv
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/Valentin-alix/AnkamaLauncherEmulatorProxy
-cd AnkamaLauncherEmulatorProxy
+git clone https://github.com/Valentin-alix/AnkamaLauncherEmulator
+cd AnkamaLauncherEmulator
 uv sync
 ```
 
@@ -120,5 +120,5 @@ asar extract "C:/Program Files/Ankama/Ankama Launcher/resources/app.asar" "<outp
 Add the package to your own project:
 
 ```bash
-pip install git+https://github.com/Valentin-alix/AnkamaLauncherEmulatorProxy
+pip install git+https://github.com/Valentin-alix/AnkamaLauncherEmulator
 ```

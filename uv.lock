@@ -48,8 +48,8 @@ dependencies = [
     { name = "protobuf" },
     { name = "psutil" },
     { name = "pycryptodomex" },
-    { name = "pyinstaller" },
     { name = "pyqt6-fluent-widgets" },
+    { name = "pyright" },
     { name = "pysocks" },
     { name = "python-dateutil" },
     { name = "requests" },
@@ -61,7 +61,7 @@ dependencies = [
 dev = [
     { name = "black" },
     { name = "frida-tools" },
-    { name = "pyright" },
+    { name = "pyinstaller" },
 ]
 
 [package.metadata]
@@ -71,8 +71,8 @@ requires-dist = [
     { name = "protobuf", specifier = "==5.28.3" },
     { name = "psutil", specifier = ">3.0.0" },
     { name = "pycryptodomex", specifier = ">=3.21.0,<4" },
-    { name = "pyinstaller", specifier = ">=6.19.0" },
     { name = "pyqt6-fluent-widgets", specifier = ">=1.11.1" },
+    { name = "pyright", specifier = ">=1.1.408" },
     { name = "pysocks", specifier = ">=1.7.1" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0,<3" },
     { name = "requests", specifier = ">1.0.0" },
@@ -84,7 +84,7 @@ requires-dist = [
 dev = [
     { name = "black", specifier = ">=24.10.0,<25" },
     { name = "frida-tools", specifier = ">=13.7.1" },
-    { name = "pyright", specifier = ">=1.1.408" },
+    { name = "pyinstaller", specifier = ">=6.19.0" },
 ]
 
 [[package]]
@@ -738,7 +738,7 @@ dependencies = [
     { name = "ruamel-yaml" },
     { name = "sortedcontainers" },
     { name = "tornado" },
-    { name = "typing-extensions", version = "4.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
     { name = "urwid" },
     { name = "wsproto" },
     { name = "zstandard" },
@@ -3794,7 +3794,7 @@ version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
-    { name = "typing-extensions", version = "4.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/80/be/97b83a464498a79103036bc74d1038df4a7ef0e402cfaf4d5e113fb14759/pyopenssl-25.3.0.tar.gz", hash = "sha256:c981cb0a3fd84e8602d7afc209522773b94c1c2446a3c710a75b06fe1beae329", size = 184073, upload-time = "2025-09-17T00:32:21.037Z" }
 wheels = [
@@ -3906,8 +3906,7 @@ version = "1.1.408"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nodeenv" },
-    { name = "typing-extensions", version = "4.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.14'" },
-    { name = "typing-extensions", version = "4.15.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.14'" },
+    { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/74/b2/5db700e52554b8f025faa9c3c624c59f1f6c8841ba81ab97641b54322f16/pyright-1.1.408.tar.gz", hash = "sha256:f28f2321f96852fa50b5829ea492f6adb0e6954568d1caa3f3af3a5f555eb684", size = 4400578, upload-time = "2026-01-08T08:07:38.795Z" }
 wheels = [
@@ -4099,25 +4098,9 @@ wheels = [
 name = "typing-extensions"
 version = "4.14.0"
 source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version == '3.13.*'",
-    "python_full_version < '3.13'",
-]
 sdist = { url = "https://files.pythonhosted.org/packages/d1/bc/51647cd02527e87d05cb083ccc402f93e441606ff1f01739a62c8ad09ba5/typing_extensions-4.14.0.tar.gz", hash = "sha256:8676b788e32f02ab42d9e7c61324048ae4c6d844a399eebace3d4979d75ceef4", size = 107423, upload-time = "2025-06-02T14:52:11.399Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/69/e0/552843e0d356fbb5256d21449fa957fa4eff3bbc135a74a691ee70c7c5da/typing_extensions-4.14.0-py3-none-any.whl", hash = "sha256:a1514509136dd0b477638fc68d6a91497af5076466ad0fa6c338e44e359944af", size = 43839, upload-time = "2025-06-02T14:52:10.026Z" },
-]
-
-[[package]]
-name = "typing-extensions"
-version = "4.15.0"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version >= '3.14'",
-]
-sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac84269196e94cf00f187f7ed21c242792a923cdb1c61f/typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466", size = 109391, upload-time = "2025-08-25T13:49:26.313Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
 ]
 
 [[package]]
