@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QTimer, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QHBoxLayout
 from qfluentwidgets import BodyLabel, CardWidget, ComboBox, LineEdit, PrimaryPushButton
 
@@ -48,9 +48,7 @@ class AccountCard(CardWidget):
             return
 
         self._launch_btn.setDisabled(True)
-        timer = QTimer(self)
-        timer.setSingleShot(True)
-        timer.timeout.connect(lambda: self._launch_btn.setDisabled(False))
-        timer.start(3000)
-
         self.launch_requested.emit(interface_ip, proxy_url)
+
+    def set_launch_enabled(self, enabled: bool) -> None:
+        self._launch_btn.setEnabled(enabled)

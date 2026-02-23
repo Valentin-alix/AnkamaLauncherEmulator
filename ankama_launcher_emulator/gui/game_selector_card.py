@@ -45,7 +45,7 @@ class GameSelectorCard(QFrame):
             f"GameSelectorCard {{ background-color: {bg}; border-radius: 8px; }}"
         )
 
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.MouseButton.LeftButton:
+    def mousePressEvent(self, a0: QMouseEvent | None) -> None:
+        if a0 is not None and a0.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit()
-        super().mousePressEvent(event)
+        super().mousePressEvent(a0)

@@ -27,7 +27,7 @@ class RetroServer(Thread):
         self.sock.listen(1)
 
     def run(self):
-        print(f"[RETRO] Listening on port {self.port}")
+        logger.info(f"[RETRO] Listening on port {self.port}")
         while True:
             conn, addr = self.sock.accept()
             Thread(target=self.handle_client, args=(conn,), daemon=True).start()

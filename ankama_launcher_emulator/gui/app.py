@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from typing import Callable
+from typing import Callable, cast
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -24,6 +24,7 @@ from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.gui.account_card import AccountCard
 from ankama_launcher_emulator.gui.consts import DOFUS_3_TITLE, DOFUS_RETRO_TITLE
 from ankama_launcher_emulator.gui.game_selector_card import GameSelectorCard
+from ankama_launcher_emulator.gui.utils import run_in_background
 from ankama_launcher_emulator.server.handler import AnkamaLauncherHandler
 from ankama_launcher_emulator.server.server import AnkamaLauncherServer
 from ankama_launcher_emulator.utils.internet import get_available_network_interfaces
@@ -101,7 +102,7 @@ class MainWindow(QMainWindow):
         self,
         accounts: list,
         all_interface: dict,
-        launch: Callable[[str, str | None, str | None], None],
+        launch: Callable[[str, str | None, str | None], str],
     ) -> QWidget:
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -112,7 +113,7 @@ class MainWindow(QMainWindow):
             login = account["apikey"]["login"]
             card = AccountCard(login, all_interface, page)
             card.launch_requested.connect(
-                lambda iface, proxy, _login=login: launch(_login, iface, proxy)
+                self._make_launch_handler(launch, login, card)
             )
             card.error_occurred.connect(self._show_error)
             layout.addWidget(card)
@@ -120,9 +121,37 @@ class MainWindow(QMainWindow):
         layout.addStretch()
         return page
 
+    def _make_launch_handler(
+        self,
+        launch: Callable[[str, str | None, str | None], str],
+        login: str,
+        card: AccountCard,
+    ) -> Callable[[object, object], None]:
+        def handler(iface: object, proxy: object) -> None:
+            def on_success(result: object) -> None:
+                self._show_success(str(result))
+                card.set_launch_enabled(True)
+
+            def on_error(err: object) -> None:
+                self._show_error(str(err))
+                card.set_launch_enabled(True)
+
+            run_in_background(
+                lambda: launch(
+                    login,
+                    cast(str | None, iface),
+                    cast(str | None, proxy),
+                ),
+                on_success=on_success,
+                on_error=on_error,
+                parent=self,
+            )
+
+        return handler
+
     def _launch_dofus(
         self, login: str, interface_ip: str | None, proxy_url: str | None
-    ) -> None:
+    ) -> str:
         proxy_listener, proxy_url = build_proxy_listener(proxy_url)
         self._server.launch_dofus(
             login,
@@ -130,13 +159,13 @@ class MainWindow(QMainWindow):
             proxy_url=proxy_url,
             interface_ip=interface_ip,
         )
-        self._show_success(f"Dofus 3 lancé pour {login}")
+        return f"Dofus 3 lancé pour {login}"
 
     def _launch_retro(
         self, login: str, interface_ip: str | None, proxy_url: str | None
-    ) -> None:
+    ) -> str:
         self._server.launch_retro(login, proxy_url=proxy_url, interface_ip=interface_ip)
-        self._show_success(f"Rétro lancé pour {login}")
+        return f"Rétro lancé pour {login}"
 
     def _show_success(self, msg: str) -> None:
         InfoBar.success(
