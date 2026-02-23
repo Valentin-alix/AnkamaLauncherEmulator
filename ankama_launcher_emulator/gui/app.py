@@ -5,8 +5,10 @@ from typing import Callable, cast
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
+    QFrame,
     QHBoxLayout,
     QMainWindow,
+    QScrollArea,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -20,6 +22,7 @@ from qfluentwidgets import (
     setTheme,
 )
 
+from ankama_launcher_emulator.consts import DOFUS_INSTALLED, RETRO_INSTALLED, ZAAP_PATH
 from ankama_launcher_emulator.decrypter.crypto_helper import CryptoHelper
 from ankama_launcher_emulator.gui.account_card import AccountCard
 from ankama_launcher_emulator.gui.consts import DOFUS_3_TITLE, DOFUS_RETRO_TITLE
@@ -44,6 +47,7 @@ class MainWindow(QMainWindow):
     def _setup_ui(self, accounts: list, all_interface: dict) -> None:
         self.setWindowTitle("Ankama Launcher")
         self.setMinimumWidth(800)
+        self.resize(950, 600)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -53,16 +57,24 @@ class MainWindow(QMainWindow):
         layout.setSpacing(12)
 
         if not accounts:
-            label = BodyLabel("No stored accounts found.")
+            label = BodyLabel(
+                f"Aucun compte trouvé.\n"
+                f"Vérifiez que le launcher Ankama (Zaap) est installé et que vous y avez des comptes connectés.\n"
+                f"Chemin attendu : {ZAAP_PATH}/keydata/"
+            )
             label.setStyleSheet("color: #ef4444;")
+            label.setWordWrap(True)
             layout.addWidget(label)
             return
 
         self._dofus_selector = GameSelectorCard(
-            DOFUS_3_TITLE, _RESOURCES / "Dofus3.png", True
+            DOFUS_3_TITLE, _RESOURCES / "Dofus3.png", True, available=DOFUS_INSTALLED
         )
         self._retro_selector = GameSelectorCard(
-            DOFUS_RETRO_TITLE, _RESOURCES / "DofusRetro.png", False
+            DOFUS_RETRO_TITLE,
+            _RESOURCES / "DofusRetro.png",
+            False,
+            available=RETRO_INSTALLED,
         )
         self._dofus_selector.clicked.connect(lambda: self._select_game(is_dofus_3=True))
         self._retro_selector.clicked.connect(
@@ -80,11 +92,15 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._title_label)
 
         self._stack = QStackedWidget()
-        self._dofus_page = self._make_game_page(
-            accounts, all_interface, self._launch_dofus
+        self._dofus_page = (
+            self._make_game_page(accounts, all_interface, self._launch_dofus)
+            if DOFUS_INSTALLED
+            else self._make_unavailable_page(DOFUS_3_TITLE)
         )
-        self._retro_page = self._make_game_page(
-            accounts, all_interface, self._launch_retro
+        self._retro_page = (
+            self._make_game_page(accounts, all_interface, self._launch_retro)
+            if RETRO_INSTALLED
+            else self._make_unavailable_page(DOFUS_RETRO_TITLE)
         )
         self._stack.addWidget(self._dofus_page)
         self._stack.addWidget(self._retro_page)
@@ -102,16 +118,25 @@ class MainWindow(QMainWindow):
         self,
         accounts: list,
         all_interface: dict,
-        launch: Callable[[str, str | None, str | None], str],
+        launch: Callable[[str, str | None, str | None], int],
     ) -> QWidget:
         page = QWidget()
-        layout = QVBoxLayout(page)
-        layout.setContentsMargins(0, 4, 0, 0)
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(0, 4, 0, 0)
+        page_layout.setSpacing(0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
 
         for account in accounts:
             login = account["apikey"]["login"]
-            card = AccountCard(login, all_interface, page)
+            card = AccountCard(login, all_interface, container)
             card.launch_requested.connect(
                 self._make_launch_handler(launch, login, card)
             )
@@ -119,18 +144,35 @@ class MainWindow(QMainWindow):
             layout.addWidget(card)
 
         layout.addStretch()
+        scroll.setWidget(container)
+        page_layout.addWidget(scroll)
+        return page
+
+    def _make_unavailable_page(self, game_title: str) -> QWidget:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        label = BodyLabel(
+            f"Client {game_title} non trouvé.\n"
+            f"Installez le jeu via le launcher Ankama (Zaap) puis relancez l'application."
+        )
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label.setWordWrap(True)
+        label.setStyleSheet("color: #ef4444;")
+        layout.addWidget(label)
         return page
 
     def _make_launch_handler(
         self,
-        launch: Callable[[str, str | None, str | None], str],
+        launch: Callable[[str, str | None, str | None], int],
         login: str,
         card: AccountCard,
     ) -> Callable[[object, object], None]:
         def handler(iface: object, proxy: object) -> None:
             def on_success(result: object) -> None:
-                self._show_success(str(result))
-                card.set_launch_enabled(True)
+                self._show_success(f"Jeu lancé pour {login}")
+                card.set_running(int(result))  # type: ignore[arg-type]
 
             def on_error(err: object) -> None:
                 self._show_error(str(err))
@@ -151,21 +193,21 @@ class MainWindow(QMainWindow):
 
     def _launch_dofus(
         self, login: str, interface_ip: str | None, proxy_url: str | None
-    ) -> str:
+    ) -> int:
         proxy_listener, proxy_url = build_proxy_listener(proxy_url)
-        self._server.launch_dofus(
+        return self._server.launch_dofus(
             login,
             proxy_listener=proxy_listener,
             proxy_url=proxy_url,
             interface_ip=interface_ip,
         )
-        return f"Dofus 3 lancé pour {login}"
 
     def _launch_retro(
         self, login: str, interface_ip: str | None, proxy_url: str | None
-    ) -> str:
-        self._server.launch_retro(login, proxy_url=proxy_url, interface_ip=interface_ip)
-        return f"Rétro lancé pour {login}"
+    ) -> int:
+        return self._server.launch_retro(
+            login, proxy_url=proxy_url, interface_ip=interface_ip
+        )
 
     def _show_success(self, msg: str) -> None:
         InfoBar.success(
@@ -174,7 +216,7 @@ class MainWindow(QMainWindow):
 
     def _show_error(self, msg: str) -> None:
         InfoBar.error(
-            "", msg, duration=3000, position=InfoBarPosition.TOP_RIGHT, parent=self
+            "", msg, duration=6000, position=InfoBarPosition.TOP_RIGHT, parent=self
         )
 
 

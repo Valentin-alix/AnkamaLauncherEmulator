@@ -4,21 +4,14 @@ from pathlib import Path
 
 import frida
 
-from ankama_launcher_emulator.consts import DOFUS_PATH
+from ankama_launcher_emulator.consts import DOFUS_PATH, ZAAP_PATH
 from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 
 logger = logging.getLogger()
 
 
 def launch_dofus_exe(instance_id: int, random_hash: str, connection_port: int, interface_ip: str | None = None) -> int:
-    log_path = os.path.join(
-        os.environ["LOCALAPPDATA"],
-        "Roaming",
-        "zaap",
-        "gamesLogs",
-        "dofus-dofus3",
-        "dofus.log",
-    )
+    log_path = os.path.join(ZAAP_PATH, "gamesLogs", "dofus-dofus3", "dofus.log")
     command: list[str | bytes] = [
         DOFUS_PATH,
         "--port",

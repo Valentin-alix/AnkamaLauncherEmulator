@@ -6,7 +6,7 @@ from pathlib import Path
 
 import frida
 
-from ankama_launcher_emulator.consts import LAUNCHER_PORT, RETRO_PATH
+from ankama_launcher_emulator.consts import LAUNCHER_PORT, RETRO_PATH, ZAAP_PATH
 from ankama_launcher_emulator.interfaces.game_name_enum import GameNameEnum
 
 RETRO_CDN = json.dumps(socket.gethostbyname_ex("dofusretro.cdn.ankama.com")[2])
@@ -18,7 +18,7 @@ logger = logging.getLogger()
 def launch_retro_exe(
     instance_id: int, random_hash: str, port: int, interface_ip: str | None = None
 ) -> int:
-    log_path = os.path.join(os.environ["APPDATA"], "zaap", "gamesLogs", "retro")
+    log_path = os.path.join(ZAAP_PATH, "gamesLogs", "retro")
 
     command: list[str | bytes] = [
         RETRO_PATH,

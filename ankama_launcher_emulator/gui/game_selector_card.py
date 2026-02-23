@@ -7,14 +7,22 @@ from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel
 COLOR = QColor("#00470E")
 COLOR_ACTIVE = COLOR.lighter(200).name()
 COLOR_INACTIVE = COLOR.darker(200).name()
+COLOR_UNAVAILABLE = QColor("#3a3a3a").name()
 
 
 class GameSelectorCard(QFrame):
     clicked = pyqtSignal()
 
-    def __init__(self, title: str, logo_path: Path, is_active: bool, parent=None):
+    def __init__(
+        self, title: str, logo_path: Path, is_active: bool, available: bool = True, parent=None
+    ):
         super().__init__(parent)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._available = available
+        self.setCursor(
+            Qt.CursorShape.PointingHandCursor
+            if available
+            else Qt.CursorShape.ForbiddenCursor
+        )
         self.setMinimumHeight(72)
         self._setup_ui(title, logo_path)
         self.set_active(is_active)
@@ -36,14 +44,26 @@ class GameSelectorCard(QFrame):
         layout.addWidget(logo)
 
         self._title_label = QLabel(title)
-        self._title_label.setFont(QFont("Segoe UI", 12, QFont.Weight.DemiBold))
+        font = self._title_label.font()
+        font.setPointSize(12)
+        font.setWeight(QFont.Weight.DemiBold)
+        self._title_label.setFont(font)
         layout.addWidget(self._title_label, 1)
 
     def set_active(self, active: bool) -> None:
-        bg = COLOR_ACTIVE if active else COLOR_INACTIVE
+        if not self._available:
+            bg = COLOR_UNAVAILABLE
+        else:
+            bg = COLOR_ACTIVE if active else COLOR_INACTIVE
         self.setStyleSheet(
             f"GameSelectorCard {{ background-color: {bg}; border-radius: 8px; }}"
         )
+        self.setGraphicsEffect(None)
+        if not self._available:
+            from PyQt6.QtWidgets import QGraphicsOpacityEffect
+            effect = QGraphicsOpacityEffect(self)
+            effect.setOpacity(0.45)
+            self.setGraphicsEffect(effect)
 
     def mousePressEvent(self, a0: QMouseEvent | None) -> None:
         if a0 is not None and a0.button() == Qt.MouseButton.LeftButton:
