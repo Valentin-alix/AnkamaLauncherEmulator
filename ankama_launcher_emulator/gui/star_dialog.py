@@ -22,7 +22,7 @@ class SystemRequirementCard(CardWidget):
         super().__init__(parent)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.infoLabel = BodyLabel(
-            "Cet outil t'a aidé ? Mets une ⭐ sur GitHub !", self
+            "This tools helped you ? Put a ⭐ on GitHub !", self
         )
 
         self.hBoxLayout = QHBoxLayout(self)

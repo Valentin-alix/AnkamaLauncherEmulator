@@ -62,9 +62,9 @@ class MainWindow(QMainWindow):
 
         if not accounts:
             label = BodyLabel(
-                f"Aucun compte trouvé.\n"
-                f"Vérifiez que le launcher Ankama (Zaap) est installé et que vous y avez des comptes connectés.\n"
-                f"Chemin attendu : {ZAAP_PATH}/keydata/"
+                f"No account found.\n"
+                f"Check that ankama launcher is installed et have logged account.\n"
+                f"Expected path : {ZAAP_PATH}/keydata/"
             )
             label.setStyleSheet(f"color: {RED_HEXA};")
             label.setWordWrap(True)
@@ -158,8 +158,8 @@ class MainWindow(QMainWindow):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         label = BodyLabel(
-            f"Client {game_title} non trouvé.\n"
-            f"Installez le jeu via le launcher Ankama (Zaap) puis relancez l'application."
+            f"Client {game_title} not found.\n"
+            f"Install game via Ankama launcher then relaunch application."
         )
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setWordWrap(True)
@@ -175,7 +175,7 @@ class MainWindow(QMainWindow):
     ) -> Callable[[object, object], None]:
         def handler(iface: object, proxy: object) -> None:
             def on_success(result: object) -> None:
-                self._show_success(f"Jeu lancé pour {login}")
+                self._show_success(f"Game launch for {login}")
                 card.set_running(int(result))  # type: ignore[arg-type]
 
             def on_error(err: object) -> None:

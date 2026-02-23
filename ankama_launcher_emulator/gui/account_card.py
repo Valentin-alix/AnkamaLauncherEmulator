@@ -56,7 +56,7 @@ class AccountCard(CardWidget):
         self._proxy_input.setFixedWidth(300)
         layout.addWidget(self._proxy_input)
 
-        self._launch_btn = PrimaryPushButton("Lancer")
+        self._launch_btn = PrimaryPushButton("Launch")
         self._launch_btn.setFixedWidth(100)
         self._launch_btn.clicked.connect(self._on_btn_clicked)
         layout.addWidget(self._launch_btn)
@@ -72,7 +72,7 @@ class AccountCard(CardWidget):
         proxy_url = self._proxy_input.text().strip() or None
 
         if proxy_url and not validation_proxy_url(proxy_url):
-            self.error_occurred.emit("URL de proxy invalide")
+            self.error_occurred.emit("Invalid proxy url")
             return
 
         self._launch_btn.setDisabled(True)
@@ -95,7 +95,7 @@ class AccountCard(CardWidget):
 
     def set_running(self, pid: int) -> None:
         self._current_pid = pid
-        self._launch_btn.setText("Arrêter")
+        self._launch_btn.setText("Stop")
         self._launch_btn.setEnabled(True)
         self._status_dot.setVisible(True)
         self._monitor_timer.start()
@@ -114,7 +114,7 @@ class AccountCard(CardWidget):
     def _on_process_ended(self) -> None:
         self._current_pid = None
         self._monitor_timer.stop()
-        self._launch_btn.setText("Lancer")
+        self._launch_btn.setText("Launch")
         self._launch_btn.setEnabled(True)
         self._status_dot.setVisible(False)
 
