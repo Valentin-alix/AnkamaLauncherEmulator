@@ -56,10 +56,11 @@ class AnkamaLauncherHandler:
     @retry_internet
     def auth_getGameToken(self, hash: str, gameId: int) -> str:
         logger.info(f"auth_getGameToken {hash}")
-        api_key_data = CryptoHelper.getStoredApiKey(self.infos_by_hash[hash].login)[
-            "apikey"
-        ]
-        certificate_datas = api_key_data.get("certificate")
+        login = self.infos_by_hash[hash].login
+        try:
+            certificate_datas = CryptoHelper.getStoredCertificate(login)["certificate"]
+        except FileNotFoundError:
+            certificate_datas = None
         return self.infos_by_hash[hash].haapi.createToken(gameId, certificate_datas)
 
     @retry_internet

@@ -82,13 +82,12 @@ class Haapi:
         return body
 
     @retry_internet
-    def createToken(self, game_id: int, certif: DecipheredCertifDatas) -> str:
+    def createToken(self, game_id: int, certif: DecipheredCertifDatas | None) -> str:
         url = ANKAMA_ACCOUNT_CREATE_TOKEN
-        params = {
-            "game": game_id,
-            "certificate_id": certif["id"],
-            "certificate_hash": CryptoHelper.generateHashFromCertif(certif),
-        }
+        params: dict = {"game": game_id}
+        if certif:
+            params["certificate_id"] = certif["id"]
+            params["certificate_hash"] = CryptoHelper.generateHashFromCertif(certif)
         response = self.zaap_session.get(url, params=params, verify=False)
         response.raise_for_status()
         body = response.json()
