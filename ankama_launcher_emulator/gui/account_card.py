@@ -42,7 +42,7 @@ class AccountCard(CardWidget):
 
         self._ip_combo = ComboBox()
         self._ip_combo.addItem("Auto", userData=None)
-        self._ip_combo.setFixedWidth(200)
+        self._ip_combo.setFixedWidth(300)
 
         for ip_value, (display_name, public_ip) in all_interface.items():
             self._ip_combo.addItem(
@@ -120,3 +120,22 @@ class AccountCard(CardWidget):
 
     def set_launch_enabled(self, enabled: bool) -> None:
         self._launch_btn.setEnabled(enabled)
+
+    @property
+    def is_running(self) -> bool:
+        return self._current_pid is not None
+
+    def update_interfaces(self, all_interface: dict[str, tuple[str, str]]) -> None:
+        current_data = self._ip_combo.currentData()
+        self._ip_combo.clear()
+        self._ip_combo.addItem("Auto", userData=None)
+        for ip_value, (display_name, public_ip) in all_interface.items():
+            self._ip_combo.addItem(
+                f"{display_name}\t{public_ip}",
+                userData=ip_value,
+            )
+        if current_data is not None:
+            for i in range(self._ip_combo.count()):
+                if self._ip_combo.itemData(i) == current_data:
+                    self._ip_combo.setCurrentIndex(i)
+                    return
