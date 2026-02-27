@@ -1,4 +1,4 @@
-import re
+from dataclasses import dataclass, field
 from typing import Callable, cast
 
 from PyQt6.QtCore import Qt, QTimer
@@ -13,10 +13,8 @@ from PyQt6.QtWidgets import (
 )
 from qfluentwidgets import (
     BodyLabel,
-    CaptionLabel,
     InfoBar,
     InfoBarPosition,
-    ProgressBar,
     TitleLabel,
 )
 
@@ -35,6 +33,7 @@ from ankama_launcher_emulator.gui.consts import (
     ORANGE_HEXA,
     RED_HEXA,
 )
+from ankama_launcher_emulator.gui.download_banner import DownloadBanner
 from ankama_launcher_emulator.gui.game_selector_card import GameSelectorCard
 from ankama_launcher_emulator.gui.star_dialog import (
     StarBar,
@@ -46,6 +45,18 @@ from ankama_launcher_emulator.utils.internet import get_available_network_interf
 from ankama_launcher_emulator.utils.proxy import build_proxy_listener
 
 
+@dataclass
+class GamePageState:
+    cards: list[AccountCard] = field(default_factory=list)
+    layout: QVBoxLayout | None = None
+    set_panel_status: Callable[[str], None] | None = None
+
+    def reset(self) -> None:
+        self.cards = []
+        self.layout = None
+        self.set_panel_status = None
+
+
 class MainWindow(QMainWindow):
     def __init__(
         self,
@@ -55,14 +66,12 @@ class MainWindow(QMainWindow):
     ):
         super().__init__()
         self._server = server
-        self.accounts: list = accounts
+        self._accounts: list = accounts
         self._interfaces: dict[str, tuple[str, str]] = all_interface
-        self._dofus_cards: list[AccountCard] = []
-        self._retro_cards: list[AccountCard] = []
-        self._dofus_cards_layout: QVBoxLayout | None = None
-        self._retro_cards_layout: QVBoxLayout | None = None
-        self._dofus_set_panel_status: Callable[[str], None] | None = None
-        self._retro_set_panel_status: Callable[[str], None] | None = None
+        self._pages: dict[bool, GamePageState] = {
+            True: GamePageState(),
+            False: GamePageState(),
+        }
         self._is_refreshing = False
         self._setup_ui(accounts, all_interface)
         self._start_refresh_timer()
@@ -176,46 +185,18 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
 
-        step_re = re.compile(r"(\d+)\s*/\s*(\d+)")
-
-        download_banner = QWidget()
-        banner_layout = QVBoxLayout(download_banner)
-        banner_layout.setContentsMargins(0, 6, 0, 4)
-        banner_layout.setSpacing(4)
-        download_title = BodyLabel("Game is not up to date, downloading update...")
-        download_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        banner_layout.addWidget(download_title)
-        progress_bar = ProgressBar()
-        progress_bar.setRange(0, 100)
-        progress_bar.setValue(0)
-        banner_layout.addWidget(progress_bar)
-        progress_label = CaptionLabel("")
-        progress_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        banner_layout.addWidget(progress_label)
-        download_banner.setVisible(False)
-
+        banner = DownloadBanner()
         cards: list[AccountCard] = []
 
         def set_panel_status(text: str) -> None:
+            was_visible = banner.isVisible()
+            banner.set_status(text)
             if not text:
-                download_banner.setVisible(False)
-                progress_bar.setRange(0, 100)
-                progress_bar.setValue(0)
                 for card in cards:
                     card.set_launch_enabled(True)
-                return
-            was_hidden = not download_banner.isVisible()
-            download_banner.setVisible(True)
-            progress_label.setText(text)
-            if was_hidden:
+            elif not was_visible:
                 for card in cards:
                     card.set_launch_enabled(False)
-            match = step_re.search(text)
-            if match:
-                current, total = int(match.group(1)), int(match.group(2))
-                if total > 0:
-                    progress_bar.setRange(0, total)
-                    progress_bar.setValue(current)
 
         for account in accounts:
             login = account["apikey"]["login"]
@@ -229,17 +210,13 @@ class MainWindow(QMainWindow):
 
         layout.addStretch()
         scroll.setWidget(container)
-        page_layout.addWidget(download_banner)
+        page_layout.addWidget(banner)
         page_layout.addWidget(scroll, 1)
 
-        if is_dofus_3:
-            self._dofus_cards = cards
-            self._dofus_cards_layout = layout
-            self._dofus_set_panel_status = set_panel_status
-        else:
-            self._retro_cards = cards
-            self._retro_cards_layout = layout
-            self._retro_set_panel_status = set_panel_status
+        state = self._pages[is_dofus_3]
+        state.cards = cards
+        state.layout = layout
+        state.set_panel_status = set_panel_status
 
         return page
 
@@ -333,7 +310,7 @@ class MainWindow(QMainWindow):
 
     def _start_refresh_timer(self) -> None:
         self._refresh_timer = QTimer(self)
-        self._refresh_timer.setInterval(5_000)
+        self._refresh_timer.setInterval(10_000)
         self._refresh_timer.timeout.connect(self._schedule_refresh)
         self._refresh_timer.start()
 
@@ -361,56 +338,41 @@ class MainWindow(QMainWindow):
     ) -> None:
         self._is_refreshing = False
 
-        current_logins = {acc["apikey"]["login"] for acc in self.accounts}
-        new_logins = {acc["apikey"]["login"] for acc in new_accounts}
+        current_logins: set[str] = {acc["apikey"]["login"] for acc in self._accounts}
+        new_logins: set[str] = {acc["apikey"]["login"] for acc in new_accounts}
 
         if current_logins != new_logins:
-            if not self.accounts and new_accounts:
-                self.accounts = new_accounts
+            if not self._accounts and new_accounts:
+                self._accounts = new_accounts
                 self._interfaces = new_interfaces
-                self._dofus_cards = []
-                self._retro_cards = []
-                self._dofus_cards_layout = None
-                self._retro_cards_layout = None
+                for state in self._pages.values():
+                    state.reset()
                 self._setup_ui(new_accounts, new_interfaces)
                 return
 
+            launches = {True: self._launch_dofus, False: self._launch_retro}
             for account in new_accounts:
                 login = account["apikey"]["login"]
-                if login not in current_logins:
-                    if self._dofus_cards_layout is not None:
-                        self._add_account_to_page(
-                            account,
-                            new_interfaces,
-                            self._dofus_cards,
-                            self._dofus_cards_layout,
-                            self._launch_dofus,
-                            self._dofus_set_panel_status,
-                        )
-                    if self._retro_cards_layout is not None:
-                        self._add_account_to_page(
-                            account,
-                            new_interfaces,
-                            self._retro_cards,
-                            self._retro_cards_layout,
-                            self._launch_retro,
-                            self._retro_set_panel_status,
-                        )
+                if login in current_logins:
+                    continue
+                for is_dofus_3, state in self._pages.items():
+                    if state.layout is None:
+                        continue
+                    self._add_account_to_page(
+                        account, new_interfaces, state, launches[is_dofus_3]
+                    )
 
             for login in current_logins - new_logins:
-                if self._dofus_cards_layout is not None:
-                    self._remove_account_from_page(
-                        login, self._dofus_cards, self._dofus_cards_layout
-                    )
-                if self._retro_cards_layout is not None:
-                    self._remove_account_from_page(
-                        login, self._retro_cards, self._retro_cards_layout
-                    )
+                for state in self._pages.values():
+                    if state.layout is None:
+                        continue
+                    self._remove_account_from_page(login, state)
 
-            self.accounts = new_accounts
+            self._accounts = new_accounts
 
         if new_interfaces != self._interfaces:
-            for card in self._dofus_cards + self._retro_cards:
+            all_cards = [card for state in self._pages.values() for card in state.cards]
+            for card in all_cards:
                 card.update_interfaces(new_interfaces)
             self._interfaces = new_interfaces
 
@@ -418,31 +380,26 @@ class MainWindow(QMainWindow):
         self,
         account: dict,
         all_interface: dict,
-        cards: list[AccountCard],
-        layout: QVBoxLayout,
+        state: GamePageState,
         launch: Callable,
-        set_panel_status: Callable[[str], None] | None,
     ) -> None:
+        assert state.layout is not None
         login = account["apikey"]["login"]
         card = AccountCard(login, all_interface)
-        cards.append(card)
+        state.cards.append(card)
         card.launch_requested.connect(
             self._make_launch_handler(
-                launch, login, card, set_panel_status or (lambda _: None)
+                launch, login, card, state.set_panel_status or (lambda _: None)
             )
         )
         card.error_occurred.connect(self._show_error)
-        layout.insertWidget(layout.count() - 1, card)
+        state.layout.insertWidget(state.layout.count() - 1, card)
 
-    def _remove_account_from_page(
-        self,
-        login: str,
-        cards: list[AccountCard],
-        layout: QVBoxLayout,
-    ) -> None:
-        for card in cards[:]:
+    def _remove_account_from_page(self, login: str, state: GamePageState) -> None:
+        assert state.layout is not None
+        for card in state.cards[:]:
             if card.login == login and not card.is_running:
-                layout.removeWidget(card)
+                state.layout.removeWidget(card)
                 card.hide()
                 card.deleteLater()
-                cards.remove(card)
+                state.cards.remove(card)

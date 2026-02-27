@@ -135,7 +135,6 @@ class AccountCard(CardWidget):
                 userData=ip_value,
             )
         if current_data is not None:
-            for i in range(self._ip_combo.count()):
-                if self._ip_combo.itemData(i) == current_data:
-                    self._ip_combo.setCurrentIndex(i)
-                    return
+            idx = self._ip_combo.findData(current_data)
+            if idx >= 0:
+                self._ip_combo.setCurrentIndex(idx)
