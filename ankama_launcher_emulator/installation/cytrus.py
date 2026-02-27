@@ -111,7 +111,3 @@ def check_cytrus_installation(
         os.makedirs(os.path.dirname(release_json_path), exist_ok=True)
         with open(release_json_path, "w") as file:
             json.dump(release_data, file, indent=2)
-
-
-if __name__ == "__main__":
-    print(cytrus_get_latest_version("dofus", "dofus3"))

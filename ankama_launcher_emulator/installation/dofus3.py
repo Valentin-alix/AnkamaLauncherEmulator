@@ -18,7 +18,3 @@ def check_dofus3_installation(
         log_prefix="DOFUS3",
         on_progress=on_progress,
     )
-
-
-if __name__ == "__main__":
-    check_dofus3_installation()
