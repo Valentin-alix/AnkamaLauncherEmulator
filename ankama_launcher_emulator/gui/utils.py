@@ -6,18 +6,19 @@ _running: set[object] = set()
 
 
 class Worker(QObject):
+    progress = pyqtSignal(str)
     success = pyqtSignal(object)
     error = pyqtSignal(object)
     finished = pyqtSignal()
 
-    def __init__(self, func: Callable[[], object]) -> None:
+    def __init__(self, func: Callable[[Callable[[str], None]], object]) -> None:
         super().__init__()
         self.func = func
 
     @pyqtSlot()
     def run(self) -> None:
         try:
-            self.success.emit(self.func())
+            self.success.emit(self.func(self.progress.emit))
         except Exception as e:
             self.error.emit(e)
         finally:
@@ -25,9 +26,10 @@ class Worker(QObject):
 
 
 def run_in_background(
-    func: Callable[[], object],
+    func: Callable[[Callable[[str], None]], object],
     on_success: Callable[[object], None] | None = None,
     on_error: Callable[[object], None] | None = None,
+    on_progress: Callable[[str], None] | None = None,
     parent: QObject | None = None,
 ) -> None:
     worker = Worker(func)
@@ -47,6 +49,8 @@ def run_in_background(
         worker.success.connect(on_success)
     if on_error is not None:
         worker.error.connect(on_error)
+    if on_progress is not None:
+        worker.progress.connect(on_progress)
 
     worker.finished.connect(_cleanup)
     worker.finished.connect(thread.quit)

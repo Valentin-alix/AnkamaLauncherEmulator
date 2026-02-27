@@ -6,6 +6,8 @@ A tool that emulates the Ankama Launcher to launch **Dofus 3** and **Dofus RETRO
 
 ## How to use it
 
+- npm install -g cytrus-v6
+
 - Simply get the .exe in Releases and execute it.
 
 Then you access this beautiful (no) interface

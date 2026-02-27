@@ -1,5 +1,7 @@
 import json
 import os
+import re
+import shutil
 from pathlib import Path
 
 if os.name == "nt":
@@ -36,8 +38,9 @@ if os.path.exists(RETRO_RELEASE_JSON_PATH):
             RETRO_PATH = "DUMMY_RETRO_PATH"
         else:
             RETRO_PATH = os.path.join(
-            content["location"], "Dofus Retro.exe" if os.name == "nt" else "DofusRetro"
-        )
+                content["location"],
+                "Dofus Retro.exe" if os.name == "nt" else "DofusRetro",
+            )
 else:
     RETRO_PATH = "DUMMY_RETRO_PATH"
     print("<!> No Retro path found !")
@@ -50,8 +53,8 @@ API_KEY_FOLDER_PATH = os.path.join(ZAAP_PATH, "keydata")
 SETTINGS_PATH = os.path.join(ZAAP_PATH, "Settings")
 
 
-PROXY_URL = "http://c11dfd1d285080f6:NnU2okrD@185.162.130.85:10000"
 LAUNCHER_PORT = 26116
+RETRO_TEXT_SOCKET_PORT = 26117
 
 GITHUB_URL = "https://github.com/Valentin-alix/AnkamaLauncherEmulator"
 
@@ -67,3 +70,7 @@ os.makedirs(app_config_dir, exist_ok=True)
 APP_CONFIG_PATH = os.path.join(app_config_dir, "config.json")
 
 RESOURCES = Path(__file__).parent.parent / "resources"
+
+ANSI_ESCAPE = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+
+CYTRUS_INSTALLED = shutil.which("cytrus-v6") is not None
